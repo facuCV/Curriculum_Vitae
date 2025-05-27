@@ -227,6 +227,15 @@ hr{
 }
 
 @media screen and (max-width: 800px){
+    article {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .exp-img img {
+        width: 4rem;
+    }
+
 	body{
 		grid-template-areas:
 			"header header header header"
@@ -314,3 +323,55 @@ hr{
 		font-size: 1rem;
 	}
 }
+
+/* Evita scroll lateral global */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Corrige .parallax mal definido */
+.parallax {
+    width: 100%;
+}
+
+@media screen and (max-width: 800px) {
+    body, header, nav, section, article, footer, #info, #edu, #exp, #skills, #hobbies {
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+    }
+
+    header {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #header-img, .exp-text {
+        width: 100%;
+    }
+
+    .exp-text h1, .exp-text h3 {
+        width: 100%;
+        text-align: center;
+        word-break: break-word;
+    }
+
+    /* Unificar habilidades e intereses en una sola columna */
+    #skills, #hobbies {
+        grid-column: span 5;
+    }
+
+    body {
+        grid-template-areas:
+            "header header header header"
+            "nav nav nav nav"
+            "info info info info"
+            "exp exp exp exp"
+            "edu edu edu edu"
+            "skills skills skills skills"
+            "hobbies hobbies hobbies hobbies"
+            "footer footer footer footer";
+    }
+}
+
