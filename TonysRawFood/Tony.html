@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!--========== BOX ICONS ==========-->
+        <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
+
+        <!--========== CSS ==========-->
+        <link rel="stylesheet" href="assets/css/styles.css">
+
+        <title>TonysRawFood</title>
+    </head>
+    <body>
+
+        <!--========== SCROLL TOP ==========-->
+        <a href="#" class="scrolltop" id="scroll-top">
+            <i class='bx bx-chevron-up scrolltop__icon'></i>
+        </a>
+
+        <!--========== HEADER ==========-->
+        <header class="l-header" id="header">
+            <nav class="nav bd-container">
+                <a href="#" class="nav__logo">TonysRawFood</a>
+
+                <div class="nav__menu" id="nav-menu">
+                    <ul class="nav__list">
+                        <li class="nav__item"><a href="#pedido" class="nav__link">Pedido</a></li>
+                        <li class="nav__item"><a href="#menu" class="nav__link">Catalogo</a></li>     
+                        <li class="nav__item"><a href="#contacto" class="nav__link">Contacto</a></li>
+
+                        <li><i class='bx bx-moon change-theme' id="theme-button"></i></li>
+                    </ul>
+                </div>
+
+                <div class="nav__toggle" id="nav-toggle">
+                    <i class='bx bx-menu'></i>
+                </div>
+            </nav>
+        </header>
+
+        <main class="l-main">
+            <!--========== HOME ==========-->
+            <section class="home" id="home">
+                <div class="home__container bd-container bd-grid">
+                    <div class="home__data">
+                        <h1 class="home__title">TonysRawFood</h1>
+                        <h2 class="home__subtitle">Hace tu pedido online <br> En la mejor tienda de mascotas</h2>
+                        <a href="#pedido" class="button" style="font-size: 35px; padding: 20px 40px;">Hacer pedido</a>
+                    </div>
+    
+                    <img src="assets/img/logotonys.jpg" alt="menu" class="home__img">
+                </div>
+            </section>
+
+<!--========== PEDIDO ==========-->
+
+<h1 class="menu-title" id="pedido-titulo">Hacer un pedido</h1>
+<form id="pedidoForm" class="menu__container1 bd-container">
+  <div>
+    <button class="menu__name1 button" disabled>Alimento</button>
+    <div id="opcionesGrowshop"></div>
+    <button type="button" class="button button-add" id="agregarItemGrowshop">+</button>
+  </div>
+
+  <button type="button" class="order-button" id="botonPedido" onclick="hacerPedido()">
+    Hacer Pedido: $<span id="precioTotal">0</span>
+  </button>
+</form>
+
+
+
+<!--========== SCRIPT PEDIDO ==========--> 
+<script>
+  const preciosGrowshop = {
+    "Eukanuba (perro)": 4500,
+    "Royal Canin (perro)": 6000,
+    "Dog Chow (perro)": 4000,
+    "Old Prince (perro)": 3800,
+    "Excellent (perro)": 4700,
+    "Eukanuba (gato)": 4600,
+    "Royal Canin (gato)": 6200,
+    "Cat Chow (gato)": 3900,
+    "Whiskas (gato, humedo)": 950,
+    "Gati (gato, humedo)": 800
+  };
+
+  const productosPorUnidad = [];
+
+  document.getElementById("agregarItemGrowshop").addEventListener("click", e => {
+    e.preventDefault();
+    agregarItem("opcionesGrowshop", preciosGrowshop, 10, false);
+  });
+
+  function agregarItem(containerId, precios, maxQuantity, esUnidad) {
+    const container = document.getElementById(containerId);
+    const item = document.createElement("div"); item.classList.add("item-container");
+
+    const sel = document.createElement("select"); sel.classList.add("item-select");
+    for (let tipo in precios) {
+      const opt = document.createElement("option");
+      opt.value = tipo;
+      opt.text = tipo;
+      opt.dataset.precio = precios[tipo];
+      opt.dataset.unidad = esUnidad ? "u" : "kg";
+      sel.appendChild(opt);
+    }
+
+    const qty = document.createElement("select"); qty.classList.add("quantity-select");
+    for (let i = 1; i <= maxQuantity; i++) {
+      const o = document.createElement("option");
+      o.value = i;
+      o.text = `${i} ${esUnidad ? 'u' : 'kg'}`;
+      qty.appendChild(o);
+    }
+
+    const rm = document.createElement("button"); rm.type = "button"; rm.classList.add("button-remove"); rm.textContent = "-";
+    rm.addEventListener("click", e => { e.preventDefault(); item.remove(); actualizarPrecioTotal(); });
+
+    item.append(sel, qty, rm);
+    container.appendChild(item);
+    actualizarPrecioTotal();
+    mostrarMensajeTemporal();
+  }
+
+  function actualizarPrecioTotal() {
+    let total = 0;
+    document.querySelectorAll(".item-container").forEach(item => {
+      const precio = parseFloat(item.querySelector(".item-select").selectedOptions[0].dataset.precio);
+      const cant = parseInt(item.querySelector(".quantity-select").value, 10);
+      total += precio * cant;
+    });
+    document.getElementById("precioTotal").textContent = total;
+  }
+
+  function hacerPedido() {
+    const phoneNumber = "5492344414679";
+    const items = agruparItems();
+    if (!items.length) { alert("Debes agregar al menos un producto para enviar el pedido."); return; }
+
+    let mensaje = `*Pedido de Alimentos para Mascotas*:\n\n`;
+    items.forEach(({ tipo, cantidad, unidad }) => mensaje += `- ${cantidad} ${unidad} de ${tipo}\n`);
+    mensaje += `\n*Total: $${document.getElementById("precioTotal").textContent}*`;
+
+    window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(mensaje)}`, "_blank");
+  }
+
+  function agruparItems() {
+    const map = {};
+    document.querySelectorAll(".item-container").forEach(item => {
+      const tipo = item.querySelector(".item-select").value;
+      const cant = parseInt(item.querySelector(".quantity-select").value, 10);
+      const unidad = item.querySelector(".item-select").selectedOptions[0].dataset.unidad;
+      if (!map[tipo]) map[tipo] = { cantidad: 0, unidad };
+      map[tipo].cantidad += cant;
+    });
+    return Object.entries(map).map(([tipo, { cantidad, unidad }]) => ({ tipo, cantidad, unidad }));
+  }
+
+  function mostrarMensajeTemporal() {
+    const msg = document.getElementById("mensaje-error");
+    msg.style.display = "block";
+    setTimeout(() => { msg.style.display = "none"; }, 2000);
+  }
+</script>
+
+<!--========== CATALOGO ==========-->
+<br><br>
+<h2 class="menu-title">Catalogo</h2>
+<section class="menu section bd-container">
+  <h2 class="menu-subtitle_cafe">Productos</h2>
+  <div class="menu__container bd-grid">
+    <div class="menu__content">
+      <img src="assets/img/Comedero.png" alt="Plato chico" class="menu__img">
+      <h3 class="menu__name">Plato chico</h3>
+      <span class="menu__detail">plástico 19 cm</span>
+      <span class="menu__preci">$3000.00</span>
+      <a href="#" class="button menu__button agregar-directo" data-nombre="Plato chico" data-precio="3000"><i class='bx bx-cart-alt'></i></a>
+    </div>
+    <div class="menu__content">
+      <img src="assets/img/Correa.png" alt="Correa" class="menu__img">
+      <h3 class="menu__name">Correa</h3>
+      <span class="menu__detail">Nylon 120 cm</span>
+      <span class="menu__preci">$7500.00</span>
+      <a href="#" class="button menu__button agregar-directo" data-nombre="Correa" data-precio="7500"><i class='bx bx-cart-alt'></i></a>
+    </div>
+    <div class="menu__content">
+      <img src="assets/img/Piedras 4kg.png" alt="Piedras Stone cat" class="menu__img">
+      <h3 class="menu__name">Piedras Stone cat</h3>
+      <span class="menu__detail">4 kg arena para gato</span>
+      <span class="menu__preci">$6000.00</span>
+      <a href="#" class="button menu__button agregar-directo" data-nombre="Piedras Stone cat" data-precio="6000"><i class='bx bx-cart-alt'></i></a>
+    </div>
+  </div>
+
+  <!-- Mensaje temporal -->
+<div id="mensaje-error" class="mensaje-error" style="display: none;">
+  Producto añadido correctamente al carrito.
+</div>
+
+<style>
+.mensaje-error {
+  color: white;
+  background-color: #28a745;
+  padding: 12px;
+  margin: 15px auto;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+  max-width: 300px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.item-container { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+.item-select, .quantity-select { padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
+.button-remove { background: #d9534f; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
+.button-remove:hover { opacity: 0.9; }
+
+/* Catalogo */
+.menu__container.bd-grid { display: flex; gap: 20px; flex-wrap: wrap; }
+.menu__content { background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 16px; text-align: center; width: 200px; }
+.menu__button { margin-top: 10px; }
+</style>
+
+</section>
+
+
+<script>
+  document.querySelectorAll(".agregar-directo").forEach(btn => {
+    btn.addEventListener("click", e => {
+      e.preventDefault();
+      agregarItem("opcionesGrowshop", { [btn.dataset.nombre]: parseFloat(btn.dataset.precio) }, 5, true);
+    });
+  });
+</script>
+
+
+            
+            <!--========== CONTACT US ==========-->
+            <section class="contact section bd-container" id="contacto">
+                <div class="contact__container bd-grid">
+                    <div class="contact__data">
+                        <h2 class="section-title contact__initial">Direccion y Contacto</h2>
+                        <h2 class="contact__description">AV MORENO 2876</h2>
+                    </div>
+
+                    <div class="contact__button">
+                        <a href="#" class="button">LLamar</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!--========== FOOTER ==========-->
+        <footer class="footer section bd-container">
+            <div class="footer__container bd-grid">
+                <div class="footer__content">
+                    <a href="#" class="footer__logo">Nombre del restaurante</a>
+                    <span class="footer__description">Direccion</span>
+                </div>
+
+                <div class="footer__content">
+                    <h3 class="footer__title">Servicios</h3>
+                    <ul>
+                        <li><a href="#" class="footer__link">Delivery</a></li>
+                        <li><a href="#" class="footer__link">Exelente calidad</a></li>
+                        <li><a href="#" class="footer__link">Comida rapida</a></li>
+                        <li><a href="#" class="footer__link">Atencion personalizada</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer__content">
+                    <h3 class="footer__title">Informacion</h3>
+                    <ul>
+                        <li><a href="#" class="footer__link">Direccion: Moreno 1235</a></li>
+                        <li><a href="#" class="footer__link">Numero: 1234456</a></li>
+                        <li><a href="#" class="footer__link">Gmail: 2323@gmail.com</a></li>
+                        <li><a href="#" class="footer__link">Instagram: leo.messi</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <p class="footer__copy">&#169; 2025 Todos los derechos resevados</p>
+        </footer>
+
+        <!--========== SCROLL REVEAL ==========-->
+        <script src="https://unpkg.com/scrollreveal"></script>
+
+        <!--========== MAIN JS ==========-->
+        <script src="assets/js/main.js"></script>
+    </body>
+</html>
