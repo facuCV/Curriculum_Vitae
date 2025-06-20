@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!--========== BOX ICONS ==========-->
+        <link href='https://cdn.jsdelivr.net/npm/boxicons@2.0.5/css/boxicons.min.css' rel='stylesheet'>
+
+        <!--========== CSS ==========-->
+        <link rel="stylesheet" href="assets/css/styles.css">
+
+        <title>Ristretto Pagina Web</title>
+    </head>
+    <body>
+
+        <!--========== SCROLL TOP ==========-->
+        <a href="#" class="scrolltop" id="scroll-top">
+            <i class='bx bx-chevron-up scrolltop__icon'></i>
+        </a>
+
+        <!--========== HEADER ==========-->
+        <header class="l-header" id="header">
+            <nav class="nav bd-container">
+                <a href="#" class="nav__logo">Ristretto</a>
+
+                <div class="nav__menu" id="nav-menu">
+                    <ul class="nav__list">
+                        <li class="nav__item"><a href="#pedido" class="nav__link">Pedido</a></li>
+                        <li class="nav__item"><a href="#menu" class="nav__link">Menu</a></li>     
+                        <li class="nav__item"><a href="#contacto" class="nav__link">Contacto</a></li>
+
+                        <li><i class='bx bx-moon change-theme' id="theme-button"></i></li>
+                    </ul>
+                </div>
+
+                <div class="nav__toggle" id="nav-toggle">
+                    <i class='bx bx-menu'></i>
+                </div>
+            </nav>
+        </header>
+
+        <main class="l-main">
+            <!--========== HOME ==========-->
+            <section class="home" id="home">
+                <div class="home__container bd-container bd-grid">
+                    <div class="home__data">
+                        <h1 class="home__title" style="color: var(--first-color2)">Ristretto</h1>
+                        <h2 class="home__subtitle">Hace tu pedido  <br> Menu de Ristretto</h2>
+                        <a href="#pedidoForm" class="button" style="font-size: 35px; padding: 20px 40px; color: var(--title-color2)" >Hacer pedido</a>
+
+                    </div>
+    
+                    <img src="assets/img/LogoNegro.png" alt="menu" class="home__img">
+                </div>
+            </section>
+
+            <!--========== PEDIDO ==========-->
+
+
+
+<form id="pedidoForm" class="menu__container1 bd-container">
+  <div id="contenedor-menu" class="menu__container1 bd-container">
+    <!-- Sección de Menú General -->
+    <div>
+      <button class="menu__name1 button" style="color: var(--title-color2)" disabled>Hacer pedido</button>
+      <div id="opcionesMenu"></div>
+      <button type="button" class="button button-add" style="color: var(--title-color2)" onclick="agregarOpcionMenu(event)">+</button>
+    </div>
+  </div>
+
+  <!-- Precio Total y Botón de Pedido -->
+   <div style="text-align: center; margin-top: 2rem;">
+    <span class="order-button" style="background: none; color: var(--first-color); font-size: 1.5rem; box-shadow: none; cursor: default; margin-bottom: 1rem;">
+      Total: $<span id="precioTotal">0</span>
+    </span>
+    <br>
+    <button style="color: var(--title-color2)" type="button" id="botonPedido" onclick="hacerPedido()" style="background: none; border: none; cursor: pointer; margin-top: 1rem;">
+      <img src="assets/img/whatsapp.png" alt="WhatsApp" style="width: 48px; height: 48px;">
+    </button>
+  </div>
+</form>
+<script>
+  const preciosMenu = {
+    "Milanesa con Papas": 4500,
+    "Ensalada Caesar": 3500,
+    "Ravioles con Salsa Bolognesa": 5000,
+    "Hamburguesa Completa": 4000,
+    "Lomo al Champiñón": 5500,
+    "Pizza Muzzarella": 3000,
+    "Empanadas de Carne (x3)": 2500,
+    "Postre Flan con Dulce": 1500,
+    "Agua sin Gas": 800,
+    "Gaseosa 500ml": 1000
+  };
+
+  function agregarOpcionMenu(event) {
+    event.preventDefault();
+    const container = document.getElementById("opcionesMenu");
+    const itemIndex = container.childElementCount + 1;
+
+    const itemContainer = document.createElement("div");
+    itemContainer.classList.add("item-container");
+
+    const select = document.createElement("select");
+    select.name = `menu${itemIndex}`;
+    select.classList.add("item-select");
+    select.onchange = actualizarPrecioTotal;
+
+    for (let tipo in preciosMenu) {
+      const option = document.createElement("option");
+      option.value = tipo;
+      option.text = tipo;
+      select.appendChild(option);
+    }
+
+    const quantitySelect = document.createElement("select");
+    quantitySelect.classList.add("quantity-select");
+    quantitySelect.onchange = actualizarPrecioTotal;
+
+    for (let i = 1; i <= 5; i++) {
+      const option = document.createElement("option");
+      option.value = i;
+      option.text = i;
+      quantitySelect.appendChild(option);
+    }
+
+    const removeButton = document.createElement("button");
+    removeButton.textContent = "-";
+    removeButton.classList.add("button-remove");
+    removeButton.onclick = (e) => eliminarItem(e, itemContainer);
+
+    itemContainer.appendChild(select);
+    itemContainer.appendChild(quantitySelect);
+    itemContainer.appendChild(removeButton);
+    container.appendChild(itemContainer);
+
+    actualizarPrecioTotal();
+  }
+
+  function eliminarItem(event, itemContainer) {
+    event.preventDefault();
+    itemContainer.remove();
+    actualizarPrecioTotal();
+  }
+
+  function actualizarPrecioTotal() {
+    let precioTotal = 0;
+    const containers = document.querySelectorAll("#opcionesMenu .item-container");
+    containers.forEach((item) => {
+      const tipo = item.querySelector(".item-select").value;
+      const cantidad = parseInt(item.querySelector(".quantity-select").value, 10) || 0;
+      precioTotal += preciosMenu[tipo] * cantidad;
+    });
+    document.getElementById("precioTotal").textContent = precioTotal;
+  }
+
+  function hacerPedido() {
+    const phoneNumber = "5492344547731";
+    const containers = document.querySelectorAll("#opcionesMenu .item-container");
+    if (containers.length === 0) {
+      alert("Debes agregar al menos un producto para enviar el pedido.");
+      return;
+    }
+
+    let mensaje = `*Pedido de Ristreto*:\n\n`;
+    containers.forEach((item) => {
+      const tipo = item.querySelector(".item-select").value;
+      const cantidad = parseInt(item.querySelector(".quantity-select").value, 10) || 0;
+      mensaje += `- ${cantidad}x ${tipo}\n`;
+    });
+
+    const precioTotal = document.getElementById("precioTotal").textContent;
+    mensaje += `\n*Total: $${precioTotal}*`;
+
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(mensaje)}`;
+    window.open(whatsappUrl, "_blank");
+  }
+</script>
+
+
+
+
+
+
+
+
+
+            <!--========== MENU ==========-->
+                <br>
+                <br>
+                <h2 class="menu-title" id="pedido">Otras cosas del menu</h2>
+
+                <section class="menu section bd-container" id="menu"> 
+
+                <h2 class="menu-subtitle_cafe">Cafes</h2>
+
+                <div class="menu__container bd-grid">
+
+                    <div class="menu__content">
+                        <img src="assets/img/cafelogo.png" alt="" class="menu__img">
+                        <h3 class="menu__name">Cafe</h3>
+                        <span class="menu__detail">Cafe batido a mano</span>
+                        <span class="menu__preci">$2500.00</span>
+                        <a href="#" class="button menu__button"><i class='bx bx-cart-alt' style="color: var(--title-color2)"></i></a>
+                    </div>
+
+                    <div class="menu__content">
+                        <img src="assets/img/cafelogo.png" alt="" class="menu__img">
+                        <h3 class="menu__name">Cafe descafeinado</h3>
+                        <span class="menu__detail">Cafe sin cafeina</span>
+                        <span class="menu__preci">$2600.00</span>
+                        <a href="#" class="button menu__button"><i class='bx bx-cart-alt' style="color: var(--title-color2)"></i></a>
+                    </div>
+
+                    <div class="menu__content">
+                        <img src="assets/img/cafelogo.png" alt="" class="menu__img">
+                        <h3 class="menu__name">Cafe con leche</h3>
+                        <span class="menu__detail">Cafe con leche vacuna</span>
+                        <span class="menu__preci">$2000.00</span>
+                        <a href="#" class="button menu__button"><i class='bx bx-cart-alt' style="color: var(--title-color2)"></i></a>
+                    </div>
+
+                    <div class="menu__content">
+                        <img src="assets/img/cafelogo.png" alt="" class="menu__img">
+                        <h3 class="menu__name">Cafe con whiski</h3>
+                        <span class="menu__detail">Cafe batido a mano con un poco de whiski</span>
+                        <span class="menu__preci">$2000.00</span>
+                        <a href="#" class="button menu__button"><i class='bx bx-cart-alt' style="color: var(--title-color2)"></i></a>
+                    </div>                    
+                </div>
+
+                <h2 class="menu-subtitle">Ensaladas</h2>
+
+                <div class="menu__container">
+                    <div class="menu__content">
+                        <img src="assets/img/ensaladalogo.png" alt="" class="menu__img">
+                        <h3 class="menu__name">ensalada rusa</h3>
+                        <span class="menu__detail">papa, zanahoria, arvejas, mayonesa </span>
+                        <span class="menu__preci">$20.00</span>
+                        <a href="#" class="button menu__button"><i class='bx bx-cart-alt' style="color: var(--title-color2)"></i></a>
+                    </div>
+
+                    <div class="menu__content">
+                        <img src="assets/img/ensaladalogo.png" alt="" class="menu__img">
+                        <h3 class="menu__name">ensalada lechuga y tomate</h3>
+                        <span class="menu__detail">lechuga y tomate</span>
+                        <span class="menu__preci">$22.00</span>
+                        <a href="#" class="button menu__button"><i class='bx bx-cart-alt' style="color: var(--title-color2)"></i></a>
+                    </div>
+                </div> 
+
+                <h2 class="menu-subtitle_pizza">Pizzas</h2>
+                <div class="menu__container">
+                     <div class="menu__content">
+                        <img src="assets/img/pizzalogo.png" alt="" class="menu__img">
+                        <h3 class="menu__name">Pizza de muzzarela</h3>
+                        <span class="menu__detail">Muzzarela</span>
+                        <span class="menu__preci">$5000</span>
+                        <a href="#" class="button menu__button"><i class='bx bx-cart-alt' style="color: var(--title-color2)"></i></a>
+                     </div>
+                     
+                    <div class="menu__content">
+                        <img src="assets/img/pizzalogo.png" alt="" class="menu__img">
+                        <h3 class="menu__name">Pizza cuatro quesos</h3>
+                        <span class="menu__detail">cuatro quesos</span>
+                        <span class="menu__preci">$6000</span>
+                        <a href="#" class="button menu__button"><i class='bx bx-cart-alt' style="color: var(--title-color2)"></i></a>
+                    </div>
+                 </div>
+            </section>
+            
+            <!--========== CONTACT US ==========-->
+            <section class="contact section bd-container" id="contacto">
+                <div class="contact__container bd-grid">
+                    <div class="contact__data">
+                        <h2 class="section-title contact__initial">Direccion y Contacto</h2>
+                        <p class="contact__description">En esta parte se veria la direccion de negocio ejemplo: rivadavia 3340 y la informacion de contacto comotelefono o gmail</p>
+                    </div>
+
+                    <div class="contact__button">
+                        <a href="#" class="button" style="color: var(--title-color2)">LLamar</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!--========== FOOTER ==========-->
+        <footer class="footer section bd-container">
+            <div class="footer__container bd-grid">
+                <div class="footer__content">
+                    <a href="#" class="footer__logo">Nombre del restaurante</a>
+                    <span class="footer__description">Direccion</span>
+                </div>
+
+                <div class="footer__content">
+                    <h3 class="footer__title">Servicios</h3>
+                    <ul>
+                        <li><a href="#" class="footer__link">Delivery</a></li>
+                        <li><a href="#" class="footer__link">Exelente calidad</a></li>
+                        <li><a href="#" class="footer__link">Comida rapida</a></li>
+                        <li><a href="#" class="footer__link">Atencion personalizada</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer__content">
+                    <h3 class="footer__title">Informacion</h3>
+                    <ul>
+                        <li><a href="#" class="footer__link">Direccion: Moreno 1235</a></li>
+                        <li><a href="#" class="footer__link">Numero: 1234456</a></li>
+                        <li><a href="#" class="footer__link">Gmail: 2323@gmail.com</a></li>
+                        <li><a href="#" class="footer__link">Instagram: leo.messi</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <p class="footer__copy">&#169; 2024 Todos los derechos resevados: nombre del restaurant</p>
+        </footer>
+
+        <!--========== SCROLL REVEAL ==========-->
+        <script src="https://unpkg.com/scrollreveal"></script>
+
+        <!--========== MAIN JS ==========-->
+        <script src="assets/js/main.js"></script>
+    </body>
+</html>
