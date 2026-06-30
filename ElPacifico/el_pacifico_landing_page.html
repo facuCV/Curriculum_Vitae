@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Suena lo Propio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pac-navy:        #1E3A6E;
+      --pac-orange:      #D4853A;
+      --pac-orange-lt:   #E8A86B;
+      --pac-sky:         #7BB8D4;
+      --pac-teal:        #3B7FA8;
+      --pac-sand:        #F2E8D8;
+      --pac-deep:        #0D2545;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      font-family: 'IM Fell English', 'Palatino Linotype', Georgia, serif;
+      background: var(--pac-sand);
+      overflow-x: hidden;
+    }
+
+    /* ══════════════════════════════
+       NAVBAR
+    ══════════════════════════════ */
+    .pac-nav {
+      position: relative;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 40px;
+      background: rgba(30, 58, 110, 0.97);
+    }
+
+    .pac-logo-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* En desktop: imagen del logo sin marco */
+    .pac-logo-img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* Placeholder SVG hasta que pongas la imagen real */
+    .pac-logo-svg {
+      width: 52px;
+      height: 52px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      overflow: hidden;
+    }
+
+    .pac-brand {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--pac-sand);
+      letter-spacing: 0.04em;
+      line-height: 1.15;
+    }
+
+    .pac-brand span {
+      display: block;
+      font-size: 10.5px;
+      font-weight: 400;
+      color: var(--pac-orange-lt);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    /* Links desktop */
+    .pac-nav-links {
+      display: flex;
+      align-items: center;
+      list-style: none;
+      gap: 0;
+    }
+
+    .pac-nav-links a {
+      display: block;
+      padding: 8px 16px;
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 13.5px;
+      color: var(--pac-sand);
+      text-decoration: none;
+      letter-spacing: 0.03em;
+      transition: color 0.2s;
+      white-space: nowrap;
+    }
+
+    .pac-nav-links a:hover { color: var(--pac-orange-lt); }
+
+    /* Hamburger — oculto en desktop */
+    .pac-hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      cursor: pointer;
+      padding: 6px;
+      background: none;
+      border: none;
+    }
+
+    .pac-hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--pac-sand);
+      border-radius: 2px;
+      transition: background 0.2s;
+    }
+
+    .pac-hamburger:hover span { background: var(--pac-orange-lt); }
+
+    /* Mobile menu drawer */
+    .pac-mobile-menu {
+      display: none;
+      flex-direction: column;
+      background: rgba(13, 37, 69, 0.98);
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 8px 0 16px;
+    }
+
+    .pac-mobile-menu.open { display: flex; }
+
+    .pac-mobile-menu a {
+      display: block;
+      padding: 13px 24px;
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 16px;
+      color: var(--pac-sand);
+      text-decoration: none;
+      border-bottom: 0.5px solid rgba(255,255,255,0.08);
+      letter-spacing: 0.03em;
+    }
+
+    .pac-mobile-menu a:hover { color: var(--pac-orange-lt); }
+
+    /* ══════════════════════════════
+       HERO
+    ══════════════════════════════ */
+    .pac-hero {
+      position: relative;
+      min-height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .pac-hero-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .pac-hero-bg svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .pac-hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(13,37,69,0.18) 0%, rgba(13,37,69,0.60) 100%);
+      z-index: 1;
+    }
+
+    /* Columna central */
+    .pac-hero-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 32px;
+      width: 100%;
+      max-width: 520px;
+      padding: 60px 32px;
+      text-align: center;
+    }
+
+    /* ══════════════════════════════
+       FLYER
+    ══════════════════════════════ */
+    .pac-flyer-wrap {
+      width: 100%;
+      max-width: 360px;
+    }
+
+    .pac-flyer-card {
+      width: 100%;
+      border: 2px solid var(--pac-orange);
+      border-radius: 3px;
+      overflow: hidden;
+      box-shadow: 0 8px 36px rgba(0,0,0,0.45);
+      background: rgba(13,37,69,0.55);
+    }
+
+    /* Placeholder ratio 3:4 */
+    .pac-flyer-placeholder {
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      background: rgba(13,37,69,0.45);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-bottom: 1px solid rgba(212,133,58,0.3);
+    }
+
+    .pac-flyer-placeholder svg {
+      width: 52px;
+      height: 52px;
+      opacity: 0.4;
+    }
+
+    .pac-flyer-placeholder p {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 13px;
+      color: rgba(242,232,216,0.45);
+      letter-spacing: 0.09em;
+    }
+
+    .pac-flyer-label {
+      padding: 14px 20px;
+      text-align: center;
+    }
+
+    .pac-flyer-eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--pac-orange-lt);
+      margin-bottom: 4px;
+    }
+
+    .pac-flyer-city {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--pac-sand);
+      line-height: 1;
+    }
+
+    /* ══════════════════════════════
+       HEADLINE
+    ══════════════════════════════ */
+    .pac-headline {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 50px;
+      font-weight: 700;
+      color: var(--pac-sand);
+      line-height: 1.05;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.5);
+      letter-spacing: 0.02em;
+    }
+
+    .pac-headline em {
+      font-style: italic;
+      color: var(--pac-orange-lt);
+    }
+
+    /* ══════════════════════════════
+       COUNTDOWN
+    ══════════════════════════════ */
+    .pac-countdown {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .pac-unit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      min-width: 64px;
+    }
+
+    .pac-unit-num {
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 46px;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    .pac-unit-label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--pac-orange-lt);
+    }
+
+    .pac-unit-sep {
+      font-size: 38px;
+      color: rgba(255,255,255,0.38);
+      line-height: 1.1;
+      font-weight: 300;
+      margin-top: 4px;
+    }
+
+    /* ══════════════════════════════
+       BOTÓN CTA
+    ══════════════════════════════ */
+    .pac-cta {
+      display: inline-block;
+      padding: 14px 40px;
+      background: var(--pac-orange);
+      color: #ffffff;
+      font-family: 'IM Fell English', Georgia, serif;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      border-radius: 2px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 18px rgba(212,133,58,0.4);
+    }
+
+    .pac-cta:hover {
+      background: var(--pac-orange-lt);
+      transform: translateY(-2px);
+    }
+
+    /* ══════════════════════════════
+       RESPONSIVE — MOBILE
+    ══════════════════════════════ */
+    @media (max-width: 700px) {
+      .pac-nav {
+        padding: 12px 18px;
+      }
+
+      /* Ocultar logo en mobile */
+      .pac-logo-svg,
+      .pac-logo-img {
+        display: none;
+      }
+
+      /* Ocultar links desktop */
+      .pac-nav-links { display: none; }
+
+      /* Mostrar hamburger */
+      .pac-hamburger { display: flex; }
+
+      .pac-brand { font-size: 17px; }
+
+      .pac-hero { min-height: auto; }
+
+      .pac-hero-content {
+        padding: 40px 20px 50px;
+        gap: 26px;
+        max-width: 100%;
+      }
+
+      .pac-flyer-wrap { max-width: 280px; }
+
+      .pac-headline { font-size: 34px; }
+
+      .pac-unit { min-width: 52px; }
+      .pac-unit-num { font-size: 34px; }
+      .pac-unit-sep { font-size: 28px; }
+
+      .pac-countdown { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     NAVBAR
+═══════════════════════════════════ -->
+<nav class="pac-nav">
+  <div class="pac-logo-wrap">
+
+    <!--
+      LOGO: reemplazá el bloque .pac-logo-svg por:
+      <img src="ruta/a/tu/logo.png" alt="El Pacífico" class="pac-logo-img">
+      cuando tengas la imagen lista.
+    -->
+    <div class="pac-logo-svg">
+      <img src="el_pacifico_logo.PNG" width="50px" height="50px" alt="Logo El Pacífico">
+    </div>
+
+    <div class="pac-brand">
+      Suena lo Propio
+    </div>
+  </div>
+
+  <!-- Links desktop -->
+  <ul class="pac-nav-links">
+    <li><a href="el_pacifico_sobre.html">Sobre El Pacífico</a></li>
+    <li><a href="#">Nuestro Equipo</a></li>
+    <li><a href="#">Chiches Pacifikeskos</a></li>
+    <li><a href="#">Contactanos</a></li>
+  </ul>
+
+  <!-- Hamburger mobile -->
+  <button class="pac-hamburger" onclick="toggleMenu()" aria-label="Abrir menú">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <!-- Drawer mobile -->
+  <div class="pac-mobile-menu" id="mobileMenu">
+    <a href="#">Sobre El Pacífico</a>
+    <a href="#">Nuestro Equipo</a>
+    <a href="#">Chiches Pacifikeskos</a>
+    <a href="#">Contactanos</a>
+  </div>
+</nav>
+
+
+<!-- ═══════════════════════════════════
+     HERO
+═══════════════════════════════════ -->
+<section class="pac-hero">
+
+  <!-- Fondo: paisaje oceánico SVG extendido -->
+  <div class="pac-hero-bg">
+    <svg viewBox="0 0 1440 820" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#B86E28"/>
+          <stop offset="35%"  stop-color="#D4853A"/>
+          <stop offset="60%"  stop-color="#E8A86B"/>
+          <stop offset="80%"  stop-color="#F2C97A"/>
+          <stop offset="100%" stop-color="#8BBDD4"/>
+        </linearGradient>
+        <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="#7BB8D4"/>
+          <stop offset="100%" stop-color="#1E3A6E"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Cielo -->
+      <rect width="1440" height="820" fill="url(#skyG)"/>
+
+      <!-- Sol -->
+      <circle cx="1050" cy="200" r="90" fill="#F2C97A" opacity="0.85"/>
+      <circle cx="1050" cy="200" r="68" fill="#E8A86B"/>
+      <circle cx="1050" cy="200" r="44" fill="#F2C97A"/>
+      <circle cx="1050" cy="200" r="26" fill="#fff" opacity="0.65"/>
+
+      <!-- Rayos -->
+      <g transform="translate(1050,200)" stroke="#F2E8D8" stroke-linecap="round" opacity="0.6">
+        <line x1="0"   y1="-100" x2="0"   y2="-138" stroke-width="3"/>
+        <line x1="71"  y1="-71"  x2="97"  y2="-97"  stroke-width="2.5"/>
+        <line x1="100" y1="0"    x2="138" y2="0"    stroke-width="3"/>
+        <line x1="71"  y1="71"   x2="97"  y2="97"   stroke-width="2"/>
+        <line x1="0"   y1="100"  x2="0"   y2="135"  stroke-width="3"/>
+        <line x1="-71" y1="71"   x2="-97" y2="97"   stroke-width="2"/>
+        <line x1="-100" y1="0"   x2="-138" y2="0"   stroke-width="3"/>
+        <line x1="-71" y1="-71"  x2="-97" y2="-97"  stroke-width="2.5"/>
+        <line x1="50"  y1="-87"  x2="66"  y2="-118" stroke-width="2"/>
+        <line x1="87"  y1="-50"  x2="118" y2="-66"  stroke-width="2"/>
+        <line x1="87"  y1="50"   x2="118" y2="66"   stroke-width="2"/>
+        <line x1="50"  y1="87"   x2="66"  y2="118"  stroke-width="2"/>
+        <line x1="-50" y1="87"   x2="-66" y2="118"  stroke-width="2"/>
+        <line x1="-87" y1="50"   x2="-118" y2="66"  stroke-width="2"/>
+        <line x1="-87" y1="-50"  x2="-118" y2="-66" stroke-width="2"/>
+        <line x1="-50" y1="-87"  x2="-66" y2="-118" stroke-width="2"/>
+      </g>
+
+      <!-- Headland horizonte -->
+      <path d="M0 410 Q150 375 320 400 Q480 422 650 388 Q820 355 1000 390 Q1150 415 1300 375 Q1380 358 1440 385 L1440 460 L0 460 Z" fill="#C97A30" opacity="0.28"/>
+
+      <!-- Mar base -->
+      <rect x="0" y="430" width="1440" height="390" fill="url(#seaG)"/>
+
+      <!-- Olas por capas -->
+      <path d="M-10 450 Q90 428 200 450 Q310 472 420 450 Q530 428 640 450 Q750 472 860 450 Q970 428 1080 450 Q1190 472 1300 450 Q1380 434 1450 450 L1450 820 L-10 820 Z" fill="#5BA3C4" opacity="0.65"/>
+      <path d="M-10 500 Q110 478 230 502 Q350 526 470 498 Q590 472 720 500 Q840 528 960 498 Q1080 470 1200 500 Q1310 526 1450 500 L1450 820 L-10 820 Z" fill="#3B7FA8" opacity="0.75"/>
+      <path d="M-10 555 Q160 528 330 558 Q500 588 660 552 Q820 518 990 556 Q1140 588 1300 550 Q1390 528 1450 555 L1450 820 L-10 820 Z" fill="#2A5F88" opacity="0.75"/>
+      <path d="M-10 620 Q200 592 400 625 Q600 658 780 614 Q960 572 1160 620 Q1310 654 1450 618 L1450 820 L-10 820 Z" fill="#1E3A6E" opacity="0.88"/>
+
+      <!-- Espumas -->
+      <path d="M80 455 Q115 444 150 455"   stroke="#fff" stroke-width="1.5" fill="none" opacity="0.45"/>
+      <path d="M350 443 Q395 432 440 443"  stroke="#fff" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <path d="M680 450 Q720 440 760 450"  stroke="#fff" stroke-width="1.2" fill="none" opacity="0.4"/>
+      <path d="M980 440 Q1020 430 1060 440" stroke="#fff" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <path d="M1250 448 Q1290 437 1330 448" stroke="#fff" stroke-width="1.2" fill="none" opacity="0.35"/>
+      <path d="M200 508 Q248 496 296 508"  stroke="#fff" stroke-width="1.2" fill="none" opacity="0.35"/>
+      <path d="M750 502 Q795 490 840 502"  stroke="#fff" stroke-width="1.2" fill="none" opacity="0.35"/>
+    </svg>
+  </div>
+
+  <div class="pac-hero-overlay"></div>
+
+  <!-- Contenido centrado -->
+  <div class="pac-hero-content">
+
+    <!-- 1. Flyer -->
+    <div class="pac-flyer-wrap">
+      <div class="pac-flyer-card">
+
+        <!--
+          FLYER: reemplazá este bloque .pac-flyer-placeholder por:
+          <img src="ruta/a/tu/flyer.jpg" alt="Flyer La Plata" style="width:100%;display:block;">
+          cuando tengas la imagen lista. El borde naranja se aplica desde .pac-flyer-card.
+        -->
+        <div class="pac-flyer-placeholder">
+          <img src="flyer.png" alt="Flyer La Plata" width="360px" height="500px">
+        </div>
+
+        <div class="pac-flyer-label">
+          <p class="pac-flyer-eyebrow">Próxima fecha</p>
+          <p class="pac-flyer-city">La Plata</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. CTA -->
+    <a class="pac-cta" href="#">Adquirir Entradas</a>
+
+    <!-- 2. Slogan -->
+    <h1 class="pac-headline">Pacifi <em>Nómetro</em></h1>
+
+    <!-- 3. Countdown -->
+    <div class="pac-countdown">
+      <div class="pac-unit">
+        <span class="pac-unit-num" id="cd-days">--</span>
+        <span class="pac-unit-label">Meses</span>
+      </div>
+      <span class="pac-unit-sep">:</span>
+      <div class="pac-unit">
+        <span class="pac-unit-num" id="cd-hours">--</span>
+        <span class="pac-unit-label">Días</span>
+      </div>
+      <span class="pac-unit-sep">:</span>
+      <div class="pac-unit">
+        <span class="pac-unit-num" id="cd-mins">--</span>
+        <span class="pac-unit-label">Horas</span>
+      </div>
+      <span class="pac-unit-sep">:</span>
+      <div class="pac-unit">
+        <span class="pac-unit-num" id="cd-secs">--</span>
+        <span class="pac-unit-label">Minutos</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<script>
+  function toggleMenu() {
+    const m = document.getElementById('mobileMenu');
+    if (m) m.classList.toggle('open');
+  }
+
+  function updateCountdown() {
+    // Cambiá esta fecha por la del festival real
+    const target = new Date('2025-12-20T20:00:00-03:00');
+    const now = new Date();
+    let diff = Math.max(0, target - now);
+
+    const days  = Math.floor(diff / 86400000); diff -= days  * 86400000;
+    const hours = Math.floor(diff / 3600000);  diff -= hours * 3600000;
+    const mins  = Math.floor(diff / 60000);    diff -= mins  * 60000;
+    const secs  = Math.floor(diff / 1000);
+
+    const pad = n => String(n).padStart(2, '0');
+    document.getElementById('cd-days').textContent  = pad(days);
+    document.getElementById('cd-hours').textContent = pad(hours);
+    document.getElementById('cd-mins').textContent  = pad(mins);
+    document.getElementById('cd-secs').textContent  = pad(secs);
+  }
+
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+</script>
+
+</body>
+</html>
