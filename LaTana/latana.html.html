@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Gestión</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap');
+:root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#242424;--border:#2e2e2e;--accent:#c8f060;--accent2:#60c8f0;--accent3:#f0a060;--text:#e8e8e8;--muted:#666;--danger:#f06060;--success:#60f0a0;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;min-height:100vh;}
+
+/* HEADER */
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;position:sticky;top:0;z-index:100;}
+.app-header-inner{max-width:900px;margin:0 auto;}
+.header-top{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.app-title{font-family:'Syne',sans-serif;font-size:clamp(1.7rem,5vw,2.5rem);font-weight:800;letter-spacing:-2px;color:var(--accent);line-height:1;}
+.header-btns-desk{display:flex;gap:8px;}
+.header-btns-mob{display:none;gap:8px;margin-top:9px;}
+@media(max-width:480px){.header-btns-desk{display:none;}.header-btns-mob{display:flex;}}
+.btn-hdr{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border:1px solid var(--accent);border-radius:3px;background:transparent;color:var(--accent);font-family:'DM Mono',monospace;font-size:.72rem;cursor:pointer;transition:all .14s;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+.btn-hdr:hover{background:var(--accent);color:#0f0f0f;}
+.btn-hdr:disabled{opacity:.35;cursor:not-allowed;}
+.btn-hdr:disabled:hover{background:transparent;color:var(--accent);}
+
+/* NAV */
+.nav-tiles{max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:18px 20px 0;}
+@media(max-width:540px){.nav-tiles{grid-template-columns:repeat(2,1fr);gap:10px;padding:14px 14px 0;}}
+.nav-tile{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:16px 10px 12px;display:flex;flex-direction:column;align-items:center;gap:7px;cursor:pointer;transition:all .17s;user-select:none;}
+.nav-tile:hover,.nav-tile.active{border-color:var(--accent);}
+.nav-tile.active{background:rgba(200,240,96,.07);}
+.nav-tile-icon{font-size:1.6rem;line-height:1;color:var(--muted);transition:color .17s;}
+.nav-tile-label{font-family:'Syne',sans-serif;font-size:.74rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);transition:color .17s;}
+.nav-tile:hover .nav-tile-icon,.nav-tile:hover .nav-tile-label,
+.nav-tile.active .nav-tile-icon,.nav-tile.active .nav-tile-label{color:var(--accent);}
+
+/* MAIN */
+.main-content{max-width:900px;margin:0 auto;padding:18px 20px;}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:4px;margin-bottom:24px;overflow:hidden;display:none;}
+.section.visible{display:block;animation:fadeS .2s ease;}
+@keyframes fadeS{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideD{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.section-header{display:flex;align-items:center;padding:17px 21px;border-bottom:1px solid var(--border);}
+.section-title{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:700;letter-spacing:-.5px;}
+.section-body{padding:21px;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--border);border-radius:3px;background:var(--surface2);color:var(--text);font-family:'DM Mono',monospace;font-size:.77rem;cursor:pointer;transition:all .13s;letter-spacing:1px;text-transform:uppercase;}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn:disabled{opacity:.3;cursor:not-allowed;}
+.btn-accent{background:var(--accent);color:#0f0f0f;border-color:var(--accent);font-weight:500;}
+.btn-accent:hover{background:#d4f570;color:#0f0f0f;border-color:#d4f570;}
+.btn-blue{background:var(--accent2);color:#0f0f0f;border-color:var(--accent2);font-weight:500;}
+.btn-blue:hover{background:#7dd4f5;color:#0f0f0f;}
+.btn-orange{background:var(--accent3);color:#0f0f0f;border-color:var(--accent3);font-weight:500;}
+.btn-orange:hover{background:#f5b47d;color:#0f0f0f;}
+.btn-green{background:var(--success);color:#0f0f0f;border-color:var(--success);font-weight:500;}
+.btn-green:hover{background:#7df5c0;color:#0f0f0f;}
+.btn-sm{padding:6px 12px;font-size:.72rem;}
+.btn-xs{padding:4px 9px;font-size:.67rem;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.btn-cancelar{background:var(--danger);color:#fff;border-color:var(--danger);font-weight:500;}
+.btn-cancelar:hover{background:#f58080;color:#fff;border-color:#f58080;}
+/* Nav bloqueado */
+.nav-tile.bloqueado{opacity:.38;cursor:not-allowed;pointer-events:none;}
+
+
+/* FORMS */
+.form-grid{display:grid;gap:13px;animation:slideD .2s ease;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field label{font-size:.67rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);}
+.field select,.field input{background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'DM Mono',monospace;font-size:.87rem;padding:8px 12px;width:100%;transition:border-color .13s;appearance:none;}
+.field select:focus,.field input:focus{outline:none;border-color:var(--accent);}
+.field select option{background:#1a1a1a;}
+.select-wrapper{position:relative;}
+.select-wrapper::after{content:'▾';position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:.77rem;}
+.form-divider{height:1px;background:var(--border);margin:8px 0;}
+.sub-label{font-size:.67rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-bottom:8px;}
+.error-msg{color:var(--danger);font-size:.72rem;letter-spacing:.5px;margin-top:6px;display:none;}
+.hidden{display:none!important;}
+
+/* CONTEOS */
+.conteo-wrap{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:22px;}
+.conteo-box{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:15px 17px;display:flex;align-items:center;gap:13px;}
+.conteo-box.single{grid-column:1/-1;}
+.conteo-label{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:2px;}
+.conteo-num{font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--accent);line-height:1;}
+.conteo-num.orange{color:var(--accent3);}
+.conteo-num.green{color:var(--success);}
+
+/* STOCK TABLE */
+.stock-table{width:100%;border-collapse:collapse;margin-top:13px;font-size:.79rem;}
+.stock-table th{color:var(--muted);font-size:.61rem;letter-spacing:2px;text-transform:uppercase;padding:7px 10px;border-bottom:1px solid var(--border);text-align:left;font-weight:400;}
+.stock-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.stock-table tr:last-child td{border-bottom:none;}
+.stock-table .tela-name{font-family:'Syne',sans-serif;font-weight:700;font-size:.9rem;}
+.stock-table .qty{color:var(--accent);font-size:1rem;font-weight:500;}
+.items-list{margin-top:9px;display:flex;flex-direction:column;gap:5px;}
+.list-section-label{font-size:.67rem;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin:13px 0 6px;}
+.rollo-item{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:8px 12px;font-size:.77rem;color:var(--muted);display:flex;gap:11px;flex-wrap:wrap;animation:fadeIn .2s ease;}
+.rollo-item span{color:var(--text);}
+
+/* PROD ITEMS */
+.prod-item{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:12px 14px;font-size:.77rem;animation:fadeIn .2s ease;margin-bottom:5px;}
+.prod-fecha{color:var(--accent2);font-weight:500;font-size:.72rem;}
+.prod-main{color:var(--text);font-size:.85rem;margin:3px 0;}
+.prod-detail{color:var(--muted);font-size:.71rem;margin-top:2px;}
+
+/* SELECTOR ROLLOS */
+.rollo-selector-item{background:var(--surface2);border:1px solid var(--border);border-radius:3px;margin-bottom:6px;}
+.rollo-selector-item select{background:var(--surface2);border:none;color:var(--text);font-family:'DM Mono',monospace;font-size:.82rem;padding:8px 12px;width:100%;appearance:none;cursor:pointer;}
+.rollo-selector-item select:focus{outline:none;}
+.tela-info-badge{margin-top:5px;font-size:.69rem;color:var(--muted);min-height:15px;}
+.tela-info-badge span{color:var(--accent2);}
+
+/* TABLA RECORTES */
+.tabla-wrapper{overflow-x:auto;margin-top:13px;border:1px solid var(--border);border-radius:3px;}
+table.recorte-table{width:100%;border-collapse:collapse;font-size:.77rem;min-width:270px;}
+table.recorte-table th{background:var(--surface2);color:var(--muted);font-size:.63rem;letter-spacing:2px;text-transform:uppercase;padding:7px 8px;border-bottom:1px solid var(--border);white-space:nowrap;}
+table.recorte-table td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle;}
+table.recorte-table tr:last-child td{border-bottom:none;}
+table.recorte-table td input[type=number]{background:transparent;border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:'DM Mono',monospace;font-size:.77rem;padding:3px 6px;width:60px;text-align:center;}
+table.recorte-table td input[type=number]:focus{outline:none;border-color:var(--accent);}
+.td-color{color:var(--text);font-weight:500;min-width:82px;}
+.talle-sel{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:.69rem;padding:3px 16px 3px 5px;width:100%;appearance:none;border-radius:2px;cursor:pointer;min-width:52px;}
+.talle-sel:focus{outline:none;border-color:var(--accent);}
+.btn-table-tool{background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--muted);font-family:'DM Mono',monospace;font-size:.65rem;padding:4px 8px;cursor:pointer;transition:all .13s;white-space:nowrap;text-transform:uppercase;letter-spacing:.5px;}
+.btn-table-tool:hover{border-color:var(--accent);color:var(--accent);}
+.btn-add-col{background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--accent);font-size:.87rem;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .13s;}
+.btn-add-col:hover{border-color:var(--accent);}
+
+/* COSTURA */
+.tipo-btn-wrap{display:flex;gap:10px;margin-top:10px;}
+.tipo-btn{flex:1;padding:13px;border:1px solid var(--border);border-radius:3px;background:var(--surface2);color:var(--muted);font-family:'DM Mono',monospace;font-size:.79rem;cursor:pointer;transition:all .18s;text-align:center;}
+.tipo-btn:hover,.tipo-btn.active{border-color:var(--accent);color:var(--accent);}
+.tipo-btn span{display:block;font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--text);margin-bottom:2px;}
+.tipo-btn.active span{color:var(--accent);}
+.costura-item{background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:12px 14px;font-size:.77rem;animation:fadeIn .2s ease;margin-bottom:5px;}
+.costura-item.pendiente{border-left:3px solid var(--accent3);}
+.costura-item.finalizada{border-left:3px solid var(--success);}
+.badge{display:inline-block;padding:2px 7px;border-radius:2px;font-size:.62rem;letter-spacing:1px;text-transform:uppercase;font-weight:500;}
+.badge-pend{background:rgba(240,160,96,.15);color:var(--accent3);border:1px solid rgba(240,160,96,.3);}
+.badge-fin{background:rgba(96,240,160,.15);color:var(--success);border:1px solid rgba(96,240,160,.3);}
+
+/* STOCK FINAL */
+.sf-table{width:100%;border-collapse:collapse;font-size:.79rem;}
+.sf-table th{color:var(--muted);font-size:.62rem;letter-spacing:2px;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;font-weight:400;background:var(--surface2);}
+.sf-table td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.sf-table tr:last-child td{border-bottom:none;}
+.sf-table .sf-nombre{font-weight:500;color:var(--text);}
+.sf-table .sf-total{font-family:'Syne',sans-serif;font-size:.98rem;font-weight:700;}
+.sf-row-rojo td{background:rgba(240,96,96,.07);border-left:3px solid var(--danger);}
+.sf-row-rojo .sf-total{color:var(--danger);}
+.sf-row-amarillo td{background:rgba(240,220,96,.07);border-left:3px solid #f0dc60;}
+.sf-row-amarillo .sf-total{color:#f0dc60;}
+.sf-row-verde td{background:rgba(96,240,160,.07);border-left:3px solid var(--success);}
+.sf-row-verde .sf-total{color:var(--success);}
+.sf-detail{color:var(--muted);font-size:.71rem;}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;align-items:center;justify-content:center;z-index:200;padding:18px;}
+.modal-overlay.active{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:26px;width:100%;max-width:440px;position:relative;}
+.modal h3{font-family:'Syne',sans-serif;font-size:1.12rem;margin-bottom:16px;color:var(--accent);padding-right:28px;}
+.modal .field{margin-bottom:13px;}
+.modal-close{position:absolute;top:12px;right:12px;background:none;border:1px solid var(--border);border-radius:2px;color:var(--muted);font-size:.78rem;width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .13s;font-family:monospace;}
+.modal-close:hover{border-color:var(--danger);color:var(--danger);}
+
+/* MODAL TALLES */
+.modal-talles{max-width:620px;max-height:82vh;overflow-y:auto;}
+.talles-modal-table{width:100%;border-collapse:collapse;font-size:.79rem;margin-top:6px;}
+.talles-modal-table th{background:var(--surface2);color:var(--muted);font-size:.62rem;letter-spacing:2px;text-transform:uppercase;padding:8px 11px;border-bottom:1px solid var(--border);text-align:center;}
+.talles-modal-table th:first-child{text-align:left;}
+.talles-modal-table td{padding:8px 11px;border-bottom:1px solid var(--border);text-align:center;}
+.talles-modal-table td:first-child{text-align:left;}
+.talles-modal-table tr:last-child td{border-bottom:none;}
+.tmt-talle{color:var(--accent);font-weight:600;font-size:.9rem;}
+.tmt-color{color:var(--text);}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="header-top">
+      <div class="app-title">Produccion</div>
+      <div class="header-btns-desk">
+        <button class="btn-hdr" id="btnCargarDesk" onclick="triggerCargar()">⬆ Cargar</button>
+        <button class="btn-hdr" onclick="abrirGuardar()">⬇ Guardar</button>
+      </div>
+    </div>
+    <div class="header-btns-mob">
+      <button class="btn-hdr" id="btnCargarMob" onclick="triggerCargar()">⬆ Cargar</button>
+      <button class="btn-hdr" onclick="abrirGuardar()">⬇ Guardar</button>
+    </div>
+  </div>
+</header>
+
+<!-- NAV TILES -->
+<nav class="nav-tiles">
+  <div class="nav-tile" id="tile-rollos" onclick="mostrarSeccion('rollos')">
+    <div class="nav-tile-icon">🧶</div>
+    <div class="nav-tile-label">Rollos</div>
+  </div>
+  <div class="nav-tile" id="tile-recortes" onclick="mostrarSeccion('recortes')">
+    <div class="nav-tile-icon">✂️</div>
+    <div class="nav-tile-label">Recortes</div>
+  </div>
+  <div class="nav-tile" id="tile-costura" onclick="mostrarSeccion('costura')">
+    <div class="nav-tile-icon">🧵</div>
+    <div class="nav-tile-label">Costura</div>
+  </div>
+  <div class="nav-tile" id="tile-stock" onclick="mostrarSeccion('stock')">
+    <div class="nav-tile-icon">📦</div>
+    <div class="nav-tile-label">Stock</div>
+  </div>
+</nav>
+
+<div class="main-content">
+
+<!-- ROLLOS -->
+<div class="section" id="sec-rollos">
+  <div class="section-header"><div class="section-title">Rollos</div></div>
+  <div class="section-body">
+    <button class="btn" id="btnAgregarRollo" onclick="toggleFormRollo()">+ Agregar rollo</button>
+    <div id="formRollo" class="hidden" style="margin-top:15px;">
+      <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="field"><label>Tipo de tela</label>
+          <div class="select-wrapper"><select id="rTipoTela">
+            <option value="">— seleccionar —</option>
+            <option value="grafa">Grafa</option><option value="gambardina">Gambardina</option>
+            <option value="ripstop">Ripstop</option><option value="mil rayas">Mil rayas</option>
+          </select></div></div>
+        <div class="field"><label>Color</label>
+          <div class="select-wrapper"><select id="rColor">
+            <option value="">— seleccionar —</option>
+            <option value="negro">Negro</option><option value="beige">Beige</option>
+            <option value="azul">Azul</option><option value="azul marino">Azul marino</option>
+            <option value="verde">Verde</option><option value="sin especificar">Sin especificar</option>
+          </select></div></div>
+        <div class="field"><label>Metros</label>
+          <input type="number" id="rMetros" value="90" step="1" min="1" max="999" oninput="limitarMetros(this)"></div>
+        <div class="field"><label>Fecha (DD/MM/AAAA)</label>
+          <input type="text" id="rFecha" maxlength="10" oninput="formatFecha(this)" placeholder="DD/MM/AAAA"></div>
+      </div>
+      <div class="form-divider" style="margin-top:11px;"></div>
+      <div style="margin-top:9px;">
+        <button class="btn btn-accent" onclick="confirmarRollo()">✓ Confirmar rollo</button>
+        <div class="error-msg" id="errRollo"></div>
+      </div>
+    </div>
+    <div class="conteo-wrap">
+      <div class="conteo-box single">
+        <div><div class="conteo-label">Stock</div><div class="conteo-num" id="conteoRollos">0</div></div>
+        <div style="color:var(--muted);font-size:.72rem;">rollos en total</div>
+        <button class="btn btn-xs" id="btnVerTodos" onclick="toggleVerTodos()" style="margin-left:auto;">Ver todos</button>
+      </div>
+    </div>
+    <div id="stockResumen">
+      <table class="stock-table">
+        <thead><tr><th>Tela</th><th>Rollos</th><th>Por color</th></tr></thead>
+        <tbody id="stockResumenBody"></tbody>
+      </table>
+    </div>
+    <div id="stockCompleto" class="hidden"><div class="items-list" id="rollosList"></div></div>
+  </div>
+</div>
+
+<!-- RECORTES -->
+<div class="section" id="sec-recortes">
+  <div class="section-header"><div class="section-title">Producción</div></div>
+  <div class="section-body">
+    <button class="btn" id="btnAgregarProd" onclick="iniciarProduccion()">+ Agregar producción</button>
+
+    <div id="prodPaso1" class="hidden" style="margin-top:15px;">
+      <div class="sub-label">Paso 1 — Tela, rollos y producto</div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="field"><label>Tipo de tela</label>
+          <div class="select-wrapper"><select id="pTipoTela" onchange="actualizarInfoTela()">
+            <option value="">— seleccionar —</option>
+            <option value="grafa">Grafa</option><option value="gambardina">Gambardina</option>
+            <option value="ripstop">Ripstop</option><option value="mil rayas">Mil rayas</option>
+          </select></div>
+          <div class="tela-info-badge" id="telaInfoBadge">—</div>
+        </div>
+        <div class="field"><label>Cantidad de rollos</label>
+          <input type="number" id="pCantRollos" min="1" step="1" placeholder="ej: 3"></div>
+        <div class="field"><label>Producto</label>
+          <div class="select-wrapper"><select id="pProducto">
+            <option value="">— seleccionar —</option>
+            <option value="bombacha">Bombacha</option>
+            <option value="pantalon trabajo">Pantalón trabajo</option>
+            <option value="pantalon cargo">Pantalón cargo</option>
+            <option value="camisas">Camisas</option>
+            <option value="sin especificar">Sin especificar</option>
+          </select></div></div>
+      </div>
+      <div class="error-msg" id="errPaso1"></div>
+      <button class="btn btn-blue btn-sm" style="margin-top:10px;" onclick="confirmarPaso1()">Continuar →</button>
+    </div>
+
+    <div id="prodPaso2" class="hidden" style="margin-top:15px;">
+      <div class="sub-label">Paso 2 — Seleccionar rollos</div>
+      <div id="selectoresRollos"></div>
+      <div class="error-msg" id="errPaso2"></div>
+      <button class="btn btn-blue btn-sm" style="margin-top:8px;" onclick="confirmarPaso2()">Continuar →</button>
+    </div>
+
+    <div id="prodPaso3" class="hidden" style="margin-top:15px;">
+      <div class="sub-label">Paso 3 — Cantidad de talles</div>
+      <div style="display:flex;align-items:flex-end;gap:10px;">
+        <div class="field" style="max-width:165px;"><label>Cantidad de talles</label>
+          <input type="number" id="pCantTalles" min="1" step="1" placeholder="ej: 4"></div>
+        <button class="btn btn-blue btn-sm" onclick="confirmarPaso3()">Generar tabla →</button>
+      </div>
+      <div class="error-msg" id="errPaso3"></div>
+    </div>
+
+    <div id="prodPaso4" class="hidden" style="margin-top:15px;">
+      <div class="sub-label">Paso 4 — Prendas por color y talle</div>
+      <div class="tabla-wrapper">
+        <table class="recorte-table"><thead id="tablaHead"></thead><tbody id="tablaBody"></tbody></table>
+      </div>
+      <div style="margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <button class="btn-table-tool" onclick="agregarColumna()">+ Agregar columna</button>
+        <button class="btn-table-tool" onclick="quitarColumna()">− Quitar columna</button>
+        <button class="btn-table-tool" onclick="poneTallesConsecutivos()">Talles consecutivos</button>
+        <button class="btn-table-tool" onclick="poneRecortesIguales()">Recortes consecutivos</button>
+      </div>
+      <div style="margin-top:12px;">
+        <button class="btn btn-accent" onclick="confirmarProduccion()">✓ Confirmar producción</button>
+        <div class="error-msg" id="errTabla"></div>
+      </div>
+    </div>
+
+    <div class="conteo-wrap">
+      <div class="conteo-box single">
+        <div><div class="conteo-label">Producciones</div><div class="conteo-num" id="conteoProd">0</div></div>
+        <div style="color:var(--muted);font-size:.72rem;">registradas</div>
+        <button class="btn btn-xs" id="btnVerTodasProd" onclick="toggleVerTodasProd()" style="display:none;margin-left:auto;">Ver todas</button>
+      </div>
+    </div>
+    <div id="prodList" class="items-list"></div>
+  </div>
+</div>
+
+<!-- COSTURA -->
+<div class="section" id="sec-costura">
+  <div class="section-header"><div class="section-title">Costura</div></div>
+  <div class="section-body">
+    <button class="btn" id="btnAgregarCostura" onclick="iniciarCostura()">+ Agregar costura</button>
+
+    <div id="costuraTipoSel" class="hidden" style="margin-top:12px;">
+      <div class="sub-label">¿Dónde se realiza?</div>
+      <div class="tipo-btn-wrap">
+        <div class="tipo-btn" id="tipoBtnFabrica" onclick="selTipoCostura('fabrica')"><span>Fábrica</span>producción propia</div>
+        <div class="tipo-btn" id="tipoBtnTercero" onclick="selTipoCostura('tercero')"><span>Tercero</span>taller externo</div>
+      </div>
+    </div>
+
+    <div id="costuraFormFabrica" class="hidden" style="margin-top:15px;">
+      <div class="sub-label">Nueva costura — Fábrica</div>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="field"><label>Fecha de ingreso (DD/MM/AAAA)</label>
+          <input type="text" id="cFechaFabrica" maxlength="10" oninput="formatFecha(this)" placeholder="DD/MM/AAAA"></div>
+        <div class="field"><label>Producción a usar</label>
+          <div class="select-wrapper"><select id="cProdSel" onchange="onProdChange('f')">
+            <option value="">— seleccionar —</option>
+          </select></div></div>
+      </div>
+      <div id="cfExtra" class="hidden" style="margin-top:11px;">
+        <div class="sub-label" style="margin-bottom:6px;">Avíos a usar (opcional)</div>
+        <div id="cfAviosList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;">
+          <div class="field"><label>Tipo de avío</label>
+            <div class="select-wrapper"><select id="cfAvTipo">
+              <option value="">— seleccionar —</option>
+              <option value="hilos">Hilos</option><option value="botones">Botones</option>
+              <option value="cremalleras">Cremalleras</option><option value="elástico">Elástico</option>
+              <option value="etiquetas">Etiquetas</option><option value="otro">Otro</option>
+            </select></div></div>
+          <div class="field"><label>Cantidad</label>
+            <input type="number" id="cfAvCant" min="1" step="1" placeholder="ej: 10"></div>
+          <button class="btn btn-xs" style="height:38px;" onclick="agregarAvioForm('f')">+ Agregar avío</button>
+        </div>
+        <div class="error-msg" id="errCfAvio"></div>
+      </div>
+      <button class="btn btn-blue btn-sm" style="margin-top:10px;" onclick="confirmarCosturaFabrica()">Confirmar →</button>
+      <div class="error-msg" id="errCostFabrica"></div>
+    </div>
+
+    <div id="costuraFormTercero" class="hidden" style="margin-top:15px;">
+      <div class="sub-label">Nueva costura — Tercero</div>
+      <div class="form-grid">
+        <div class="field"><label>Fecha de ingreso (DD/MM/AAAA)</label>
+          <input type="text" id="cFechaTercero" maxlength="10" oninput="formatFecha(this)" placeholder="DD/MM/AAAA"></div>
+        <div class="field"><label>Producción a usar</label>
+          <div class="select-wrapper"><select id="cProdSelT" onchange="onProdChange('t')">
+            <option value="">— sin producción —</option>
+          </select></div></div>
+        <div id="ctExtra" class="hidden">
+          <div class="sub-label" style="margin-bottom:6px;">Avíos a usar (opcional)</div>
+          <div id="ctAviosList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;">
+            <div class="field"><label>Tipo de avío</label>
+              <div class="select-wrapper"><select id="ctAvTipo">
+                <option value="">— seleccionar —</option>
+                <option value="hilos">Hilos</option><option value="botones">Botones</option>
+                <option value="cremalleras">Cremalleras</option><option value="elástico">Elástico</option>
+                <option value="etiquetas">Etiquetas</option><option value="otro">Otro</option>
+              </select></div></div>
+            <div class="field"><label>Cantidad</label>
+              <input type="number" id="ctAvCant" min="1" step="1" placeholder="ej: 10"></div>
+            <button class="btn btn-xs" style="height:38px;" onclick="agregarAvioForm('t')">+ Agregar avío</button>
+          </div>
+          <div class="error-msg" id="errCtAvio"></div>
+        </div>
+        <div class="field"><label>Nombre del tercero</label>
+          <input type="text" id="cNombreTercero" placeholder="ej: Taller San Martín"></div>
+        <div class="field"><label>Descripción</label>
+          <input type="text" id="cDescTercero" placeholder="ej: 50 bombachas grafa negro"></div>
+      </div>
+      <button class="btn btn-blue btn-sm" style="margin-top:10px;" onclick="confirmarCosturaTercero()">Confirmar →</button>
+      <div class="error-msg" id="errCostTercero"></div>
+    </div>
+
+    <div class="conteo-wrap" style="margin-top:22px;">
+      <div class="conteo-box">
+        <div><div class="conteo-label">Pendientes</div><div class="conteo-num orange" id="conteoCostPend">0</div></div>
+        <div style="color:var(--muted);font-size:.72rem;">en proceso</div>
+      </div>
+      <div class="conteo-box">
+        <div><div class="conteo-label">Finalizadas</div><div class="conteo-num green" id="conteoCostFin">0</div></div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="color:var(--muted);font-size:.72rem;">entregadas</div>
+          <button class="btn btn-xs" id="btnVerTodasCost" onclick="toggleVerTodasCost()" style="display:none;">Ver todas</button>
+        </div>
+      </div>
+    </div>
+    <div id="costuraPendList" class="items-list"></div>
+    <div id="costuraFinList" class="items-list"></div>
+  </div>
+</div>
+
+<!-- STOCK -->
+<div class="section" id="sec-stock">
+  <div class="section-header"><div class="section-title">Stock</div></div>
+  <div class="section-body">
+    <div class="sub-label" style="margin-bottom:6px;">Prendas</div>
+    <div style="overflow-x:auto;border:1px solid var(--border);border-radius:3px;">
+      <table class="sf-table">
+        <thead><tr><th>Producto</th><th>Total</th><th>Detalle</th></tr></thead>
+        <tbody id="sfBodyPrendas"></tbody>
+      </table>
+    </div>
+    <div style="display:flex;align-items:center;gap:11px;margin-top:22px;margin-bottom:6px;">
+      <div class="sub-label" style="margin:0;">Avíos</div>
+      <button class="btn btn-xs" onclick="toggleFormAvio()">+ Agregar</button>
+    </div>
+    <div id="formAvio" class="hidden" style="margin-bottom:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;">
+        <div class="field"><label>Tipo de avío</label>
+          <div class="select-wrapper"><select id="avTipo">
+            <option value="">— seleccionar —</option>
+            <option value="hilos">Hilos</option><option value="botones">Botones</option>
+            <option value="cremalleras">Cremalleras</option><option value="elástico">Elástico</option>
+            <option value="etiquetas">Etiquetas</option><option value="otro">Otro</option>
+          </select></div></div>
+        <div class="field"><label>Cantidad</label>
+          <input type="number" id="avCantidad" min="1" step="1" placeholder="ej: 200"></div>
+        <button class="btn btn-accent btn-sm" onclick="confirmarAvio()" style="height:39px;">✓</button>
+      </div>
+      <div class="error-msg" id="errAvio"></div>
+    </div>
+    <div style="overflow-x:auto;border:1px solid var(--border);border-radius:3px;">
+      <table class="sf-table">
+        <thead><tr><th>Avío</th><th>Cantidad</th></tr></thead>
+        <tbody id="sfBodyAvios"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main-content -->
+
+<!-- MODAL GUARDAR -->
+<div class="modal-overlay" id="modalGuardar">
+  <div class="modal">
+    <button class="modal-close" onclick="cerrarModal('modalGuardar')">✕</button>
+    <h3>Guardar Sistema</h3>
+    <div class="field"><label>Fecha del archivo (DD/MM/AAAA)</label>
+      <input type="text" id="fechaGuardar" maxlength="10" oninput="formatFecha(this)" placeholder="DD/MM/AAAA"></div>
+    <div class="btn-row" style="justify-content:flex-end;margin-top:4px;">
+      <button class="btn btn-sm" onclick="cerrarModal('modalGuardar')">Cancelar</button>
+      <button class="btn btn-accent btn-sm" onclick="ejecutarGuardar()">Descargar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR PRODUCCIÓN -->
+<div class="modal-overlay" id="modalFechaProd">
+  <div class="modal">
+    <button class="modal-close" onclick="cerrarModal('modalFechaProd')">✕</button>
+    <h3>Confirmar producción</h3>
+    <div class="field"><label>Fecha (DD/MM/AAAA)</label>
+      <input type="text" id="mFechaProd" maxlength="10" oninput="formatFecha(this)" placeholder="DD/MM/AAAA"></div>
+    <div class="btn-row" style="justify-content:flex-end;margin-top:4px;">
+      <button class="btn btn-sm" onclick="cerrarModal('modalFechaProd')">Cancelar</button>
+      <button class="btn btn-accent btn-sm" onclick="finalizarProduccion()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FINALIZAR COSTURA -->
+<div class="modal-overlay" id="modalFinCost">
+  <div class="modal">
+    <button class="modal-close" onclick="cerrarModal('modalFinCost')">✕</button>
+    <h3>Finalizar costura</h3>
+    <div class="field"><label>Fecha de finalización (DD/MM/AAAA)</label>
+      <input type="text" id="mFechaFinCost" maxlength="10" oninput="formatFecha(this)" placeholder="DD/MM/AAAA"></div>
+    <div class="btn-row" style="justify-content:flex-end;margin-top:4px;">
+      <button class="btn btn-sm" onclick="cerrarModal('modalFinCost')">Cancelar</button>
+      <button class="btn btn-green btn-sm" onclick="confirmarFinCost()">Finalizar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TALLES -->
+<div class="modal-overlay" id="modalTalles">
+  <div class="modal modal-talles">
+    <button class="modal-close" onclick="cerrarModal('modalTalles')">✕</button>
+    <h3 id="modalTallesTitulo">Detalle de talles</h3>
+    <div id="modalTallesBody"></div>
+  </div>
+</div>
+
+<input type="file" id="inputTxt" accept=".txt" style="display:none" onchange="cargarTxt(event)">
+
+<script>
+// ═══════════════════ ESTADO ═══════════════════
+let rollos=[],producciones=[],costuras=[],avios=[];
+let txtCargado=false;
+let formRolloVisible=false,verTodosRollos=false,verTodasProd=false,verTodasCost=false;
+let costFinalizandoId=null;
+let pE={tipoTela:'',cantRollos:0,producto:'',colores:[],talles:[],datosTabla:{},_grupos:{},_selConteo:{}};
+
+const TELAS=['grafa','gambardina','ripstop','mil rayas'];
+const COLS=['negro','beige','azul marino','azul','verde','sin especificar'];
+const INIC={negro:'N',beige:'B',azul:'A','azul marino':'AM',verde:'V','sin especificar':'SE'};
+const PROD_FIJOS=['bombacha grafa','bombacha ripstop','bombacha gambardina','pantalon trabajo','pantalon cargo','camisas'];
+
+// ═══════════════════ UTILS ═══════════════════
+const pad=n=>String(n).padStart(2,'0');
+const hoy=()=>{const d=new Date();return`${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`;};
+const ahoraStr=()=>{const d=new Date();return`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;};
+function genId(){const d=new Date();return`${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}${String(d.getMilliseconds()).padStart(3,'0')}`;}
+function formatFecha(inp){let v=inp.value.replace(/\D/g,'');if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2);if(v.length>5)v=v.slice(0,5)+'/'+v.slice(5);inp.value=v.slice(0,10);}
+function esFechaValida(s){if(!s||s.length!==10)return false;const[dd,mm,aa]=s.split('/').map(Number);if(!dd||!mm||!aa||mm<1||mm>12||dd<1||aa<1900||aa>2100)return false;return dd<=new Date(aa,mm,0).getDate();}
+function cerrarModal(id){document.getElementById(id).classList.remove('active');}
+function descarga(txt,nombre){const u=URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download=nombre;a.click();URL.revokeObjectURL(u);}
+function ctag(c){return INIC[c]||c.slice(0,2).toUpperCase();}
+function limitarMetros(inp){let v=inp.value.replace(/\D/g,'');if(v.length>3)v=v.slice(0,3);if(Number(v)>999)v='999';inp.value=v;}
+function errShow(id,msg){const el=document.getElementById(id);if(!el)return;el.textContent=msg;el.style.display=msg?'block':'none';}
+
+// ═══════════════════ NAV ═══════════════════
+const SECS=['rollos','recortes','costura','stock'];
+let navBloqueado=false;
+function bloquearNav(){navBloqueado=true;SECS.forEach(s=>document.getElementById('tile-'+s).classList.add('bloqueado'));}
+function desbloquearNav(){navBloqueado=false;SECS.forEach(s=>document.getElementById('tile-'+s).classList.remove('bloqueado'));}
+function mostrarSeccion(n){
+  if(navBloqueado)return;
+  SECS.forEach(s=>{document.getElementById('sec-'+s).classList.toggle('visible',s===n);document.getElementById('tile-'+s).classList.toggle('active',s===n);});
+  setTimeout(()=>document.getElementById('sec-'+n).scrollIntoView({behavior:'smooth',block:'start'}),50);
+}
+
+// ═══════════════════ HELPERS CANCELAR ═══════════════════
+function setCancelBtn(btnId,label,cancelFn){
+  const btn=document.getElementById(btnId);
+  btn.className='btn btn-cancelar';
+  btn.textContent='✕ Cancelar '+label;
+  btn.onclick=cancelFn;
+}
+function setAddBtn(btnId,label,addFn){
+  const btn=document.getElementById(btnId);
+  btn.className='btn';
+  btn.textContent='+ Agregar '+label;
+  btn.onclick=addFn;
+}
+function pedirConfirmCancel(labelAccion,confirmCb){
+  if(confirm('¿Cancelar "'+labelAccion+'"?\nSe perderán los datos ingresados.')){confirmCb();}
+}
+
+
+// ═══════════════════ TXT — GENERAR ═══════════════════
+function strTallesProd(p){
+  if(!p.colores||!p.talles||!p.colores.length||!p.talles.length)return'-';
+  return p.colores.map(c=>`${c} ${p.talles.map(t=>`T${t}.${(p.cantPorColorTalle[c]||{})[t]||0}`).join(' ')}`).join(' — ');
+}
+function strColorProd(p){return p.colores&&p.colores.length?p.colores.map(c=>`${c} ${p.porColor[c]||0}`).join(' '):'-';}
+function strTallesCost(c){
+  if(!c.colores||!c.talles||!c.colores.length||!c.talles.length)return'-';
+  return c.colores.map(col=>`${col} ${c.talles.map(t=>`T${t}.${(c.cantPorColorTalle[col]||{})[t]||0}`).join(' ')}`).join(' — ');
+}
+function strColorCost(c){return c.colores&&c.colores.length?c.colores.map(col=>`${col} ${c.porColor[col]||0}`).join(' '):'-';}
+function strAviosCost(c){return c.aviosUsados&&c.aviosUsados.length?c.aviosUsados.map(a=>`${a.tipo} ${a.cantidad}`).join(' '):'-';}
+
+function generarTxt(){
+  let t='Sistema:\n\n';
+  t+='RollosStock:\n';
+  if(!rollos.length)t+='(sin rollos)\n';
+  else rollos.forEach(r=>{t+=`-------\ntipo de tela: ${r.tipoTela}\ncolor: ${r.color}\nmetros: ${r.metros}\nfecha: ${r.fecha}\nid unica: ${r.id}\n------\n`;});
+  t+='\nRecortesStock:\n';
+  if(!producciones.length)t+='(sin recortes)\n';
+  else producciones.forEach(p=>{
+    t+=`-------\nfecha: ${p.fecha}\nrollos usados: ${p.rollosUsados}\ntipo de tela: ${p.tipoTela}\nproducto: ${p.producto}\nTotal: ${p.totalPrendas}\nPor color: ${strColorProd(p)}\ntalles: ${strTallesProd(p)}\nmetros totales: ${p.totalMetros}\nmetros por prenda: ${p.metrosPorPrenda}\n------\n`;
+  });
+  t+='\nCosturaStock:\n';
+  if(!costuras.length)t+='(sin costuras)\n';
+  else costuras.forEach(c=>{
+    t+=`------\nfecha ingreso: ${c.fecha}\nproduccion: ${c.produccionId||'-'}\nproducto: ${c.producto||'-'}\ntipo de tela: ${c.tipoTela||'-'}\ntotal prendas: ${c.totalPrendas||0}\npor color: ${strColorCost(c)}\ntalles: ${strTallesCost(c)}\navios usados: ${strAviosCost(c)}\nEstado: ${c.estado}\nlugar: ${c.lugar}\nnombre: ${c.nombre||'-'}\ndescripcion: ${c.descripcion||'-'}\nfecha de finalizacion: ${c.fechaFin||'-'}\n------\n`;
+  });
+  t+='\nAviosStock:\n';
+  if(!avios.length)t+='(sin avios)\n';
+  else{const a={};avios.forEach(x=>{a[x.tipo]=(a[x.tipo]||0)+x.cantidad;});Object.entries(a).forEach(([tipo,cant])=>{t+=`-------\navio: ${tipo}\ncantidad: ${cant}\n------\n`;});}
+  return t;
+}
+
+// ═══════════════════ TXT — CARGAR ═══════════════════
+function triggerCargar(){
+  if(txtCargado){alert('Solo se puede cargar una vez por sesión.');return;}
+  document.getElementById('inputTxt').click();
+}
+function cargarTxt(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=e=>parsearTxt(e.target.result);r.readAsText(f);ev.target.value='';
+}
+function extraerSec(txt,ini,fins){
+  const idx=txt.indexOf(ini);if(idx===-1)return null;
+  let fin=txt.length;fins.forEach(f=>{const i=txt.indexOf(f,idx+ini.length);if(i!==-1&&i<fin)fin=i;});
+  return txt.slice(idx+ini.length,fin).trim();
+}
+function parseBloque(b){const o={};b.split('\n').filter(l=>l.trim()&&!l.match(/^-{5,}$/)).forEach(l=>{const i=l.indexOf(':');if(i!==-1)o[l.slice(0,i).trim().toLowerCase()]=l.slice(i+1).trim();});return o;}
+function parseTallesStr(s){
+  const colores=[],cpt={},ts=new Set();
+  if(!s||s==='-')return{colores,cantPorColorTalle:cpt,tallesSet:ts};
+  const segs=s.split(/\s+—\s+/);
+  segs.forEach(seg=>{
+    let mc=null;
+    COLS.forEach(c=>{if(new RegExp('^'+c.replace(/ /g,'\\s+')+'\\b','i').test(seg.trim()))mc=c;});
+    if(!mc){COLS.forEach(c=>{const m=new RegExp('\\b'+c.replace(/ /g,'\\s+')+'\\b','i').exec(seg);if(m&&!mc)mc=c;});}
+    if(!mc)return;
+    const color=mc.toLowerCase();colores.push(color);cpt[color]={};
+    (seg.match(/T(\d+)\.(\d+)/gi)||[]).forEach(tok=>{const m=tok.match(/T(\d+)\.(\d+)/i);if(m){const t=Number(m[1]),c=Number(m[2]);cpt[color][t]=c;ts.add(t);}});
+  });
+  if(!colores.length){
+    let rest=s;
+    while(rest.trim()){
+      let mc=null,mi=Infinity;
+      COLS.forEach(c=>{const m=new RegExp('\\b'+c.replace(/ /g,'\\s+')+'\\b','i').exec(rest);if(m&&m.index<mi){mi=m.index;mc=c;}});
+      if(!mc)break;
+      const sm=new RegExp(mc.replace(/ /g,'\\s+'),'i').exec(rest);if(!sm)break;
+      const after=rest.slice(sm.index+sm[0].length).trim();
+      let ei=after.length;COLS.forEach(c=>{const m=new RegExp('\\b'+c.replace(/ /g,'\\s+')+'\\b','i').exec(after);if(m&&m.index<ei)ei=m.index;});
+      const color=mc.toLowerCase();colores.push(color);cpt[color]={};
+      (after.slice(0,ei).trim().match(/T(\d+)\.(\d+)/gi)||[]).forEach(tok=>{const m=tok.match(/T(\d+)\.(\d+)/i);if(m){const t=Number(m[1]),c=Number(m[2]);cpt[color][t]=c;ts.add(t);}});
+      rest=after.slice(ei);
+    }
+  }
+  return{colores,cantPorColorTalle:cpt,tallesSet:ts};
+}
+function parsearTxt(texto){
+  const sR=extraerSec(texto,'RollosStock:',['RecortesStock:','CosturaStock:','AviosStock:']);
+  const sP=extraerSec(texto,'RecortesStock:',['CosturaStock:','AviosStock:']);
+  const sC=extraerSec(texto,'CosturaStock:',['AviosStock:']);
+  const sA=extraerSec(texto,'AviosStock:',[]);
+  let nR=0,nP=0,nC=0,nA=0;
+  if(sR){const ids=new Set();sR.split(/-------\n/).filter(b=>b.trim()&&!b.includes('(sin')).forEach(b=>{const o=parseBloque(b);if(o['tipo de tela']&&o.color&&o.fecha&&o['id unica']){const id=o['id unica'];if(!rollos.some(r=>r.id===id)&&!ids.has(id)){ids.add(id);rollos.push({id,tipoTela:o['tipo de tela'],color:o.color,metros:Number(o.metros)||0,fecha:o.fecha});nR++;}}});}
+  if(sP){sP.split(/-------\n/).filter(b=>b.trim()&&!b.includes('(sin')).forEach((b,idx)=>{
+    const lineas=b.split('\n').filter(l=>l.trim()&&!l.match(/^-{5,}$/));
+    const o={};const tL=lineas.find(l=>l.toLowerCase().startsWith('talles:'))||'';const pL=lineas.find(l=>l.toLowerCase().startsWith('por color:'))||'';
+    lineas.forEach(l=>{if(l.toLowerCase().startsWith('talles:')||l.toLowerCase().startsWith('por color:'))return;const i=l.indexOf(':');if(i!==-1)o[l.slice(0,i).trim().toLowerCase()]=l.slice(i+1).trim();});
+    if(!o.fecha)return;
+    const{colores,cantPorColorTalle,tallesSet}=parseTallesStr(tL.replace(/^talles:\s*/i,'').trim());
+    const talles=[...tallesSet].sort((a,b)=>a-b);
+    const porColor={};COLS.forEach(c=>{const m=new RegExp('\\b'+c.replace(/ /g,'\\s+')+'\\s+(\\d+)','i').exec(pL);if(m)porColor[c]=Number(m[1]);});
+    const totalPrendas=Number(o.total)||0;const totalMetros=Number(o['metros totales'])||0;
+    const metrosPorPrenda=Number(o['metros por prenda'])||parseFloat((totalMetros/(totalPrendas||1)).toFixed(2));
+    producciones.push({id:genId()+idx,fecha:o.fecha,hora:o.hora||'',rollosUsados:Number(o['rollos usados'])||0,tipoTela:o['tipo de tela']||'',producto:o.producto||'',totalPrendas,cantPorColorTalle,colores,talles,totalMetros,metrosPorPrenda,porColor});nP++;
+  });}
+  if(sC){sC.split(/------\n/).filter(b=>b.trim()&&!b.includes('(sin')).forEach((b,idx)=>{
+    const lineas=b.split('\n').filter(l=>l.trim()&&!l.match(/^-{5,}$/));
+    const o={};const tL=lineas.find(l=>l.toLowerCase().startsWith('talles:'))||'';const pL=lineas.find(l=>l.toLowerCase().startsWith('por color:'))||'';const avL=lineas.find(l=>l.toLowerCase().startsWith('avios usados:'))||'';
+    lineas.forEach(l=>{if(l.toLowerCase().startsWith('talles:')||l.toLowerCase().startsWith('por color:')||l.toLowerCase().startsWith('avios usados:'))return;const i=l.indexOf(':');if(i!==-1)o[l.slice(0,i).trim().toLowerCase()]=l.slice(i+1).trim();});
+    if(!o['fecha ingreso'])return;
+    const{colores,cantPorColorTalle,tallesSet}=parseTallesStr(tL.replace(/^talles:\s*/i,'').trim());
+    const talles=[...tallesSet].sort((a,b)=>a-b);
+    const porColor={};COLS.forEach(c=>{const m=new RegExp('\\b'+c.replace(/ /g,'\\s+')+'\\s+(\\d+)','i').exec(pL);if(m)porColor[c]=Number(m[1]);});
+    const avStr=avL.replace(/^avios usados:\s*/i,'').trim();
+    const aviosUsados=[];
+    if(avStr&&avStr!=='-'){
+      (avStr.match(/(\S+)\s+(\d+)/g)||[]).forEach(tok=>{const m=tok.match(/(\S+)\s+(\d+)/);if(m)aviosUsados.push({tipo:m[1],cantidad:Number(m[2])});});
+    }
+    costuras.push({id:genId()+'c'+idx,fecha:o['fecha ingreso'],lugar:o.lugar||'fabrica',produccionId:o.produccion==='-'?'':o.produccion||'',produccionRef:null,producto:o.producto==='-'?'':o.producto||'',tipoTela:o['tipo de tela']==='-'?'':o['tipo de tela']||'',totalPrendas:Number(o['total prendas'])||0,colores,talles,cantPorColorTalle,porColor,aviosUsados,estado:o.estado||'pendiente',nombre:o.nombre==='-'?'':o.nombre||'',descripcion:o.descripcion==='-'?'':o.descripcion||'',fechaFin:o['fecha de finalizacion']==='-'?'':o['fecha de finalizacion']||''});nC++;
+  });}
+  if(sA){avios=[];sA.split(/-------\n/).filter(b=>b.trim()&&!b.includes('(sin')).forEach(b=>{const o=parseBloque(b);if(o.avio&&o.cantidad){avios.push({tipo:o.avio,cantidad:Number(o.cantidad)||0});nA++;}});}
+  txtCargado=true;
+  ['btnCargarDesk','btnCargarMob'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=true;});
+  renderRollos();renderProducciones();renderCosturas();renderStockFinal();
+  alert(`✓ Cargado: ${nR} rollos · ${nP} recortes · ${nC} costuras · ${nA} avíos`);
+}
+
+// ═══════════════════ GUARDAR ═══════════════════
+function abrirGuardar(){document.getElementById('fechaGuardar').value=hoy();document.getElementById('modalGuardar').classList.add('active');}
+function ejecutarGuardar(){
+  const f=document.getElementById('fechaGuardar').value.trim();
+  if(!esFechaValida(f)){alert('Fecha inválida.');return;}
+  descarga(generarTxt(),`Sistema_${f.replace(/\//g,'-')}.txt`);cerrarModal('modalGuardar');
+}
+
+// ═══════════════════ ROLLOS ═══════════════════
+function toggleFormRollo(){
+  formRolloVisible=!formRolloVisible;
+  const f=document.getElementById('formRollo');
+  if(formRolloVisible){
+    f.classList.remove('hidden');
+    document.getElementById('rTipoTela').value='';document.getElementById('rColor').value='';
+    document.getElementById('rMetros').value='90';document.getElementById('rFecha').value=hoy();
+    errShow('errRollo','');
+    bloquearNav();
+    setCancelBtn('btnAgregarRollo','rollo',cancelarFormRollo);
+  } else {
+    f.classList.add('hidden');
+    desbloquearNav();
+    setAddBtn('btnAgregarRollo','rollo',toggleFormRollo);
+  }
+}
+function cancelarFormRollo(){
+  pedirConfirmCancel('agregar rollo',()=>{
+    formRolloVisible=false;
+    document.getElementById('formRollo').classList.add('hidden');
+    errShow('errRollo','');
+    desbloquearNav();
+    setAddBtn('btnAgregarRollo','rollo',toggleFormRollo);
+  });
+}
+
+function confirmarRollo(){
+  const tela=document.getElementById('rTipoTela').value,color=document.getElementById('rColor').value;
+  const metros=document.getElementById('rMetros').value,fecha=document.getElementById('rFecha').value;
+  if(!tela||!color){errShow('errRollo','⚠ Seleccioná tipo de tela y color.');return;}
+  const m=Number(metros);if(!metros||isNaN(m)||m<1||m>999){errShow('errRollo','⚠ Metros entre 1 y 999.');return;}
+  if(!esFechaValida(fecha)){errShow('errRollo','⚠ Fecha inexistente. Usá DD/MM/AAAA.');return;}
+  errShow('errRollo','');
+  let id=genId();while(rollos.some(r=>r.id===id))id=genId();
+  rollos.push({id,tipoTela:tela,color,metros:m,fecha});
+  renderRollos();document.getElementById('formRollo').classList.add('hidden');formRolloVisible=false;
+  desbloquearNav();setAddBtn('btnAgregarRollo','rollo',toggleFormRollo);
+}
+function renderRollos(){
+  document.getElementById('conteoRollos').textContent=rollos.length;
+  const body=document.getElementById('stockResumenBody');body.innerHTML='';
+  TELAS.forEach(tela=>{
+    const de=rollos.filter(r=>r.tipoTela===tela);const cc={};de.forEach(r=>{cc[r.color]=(cc[r.color]||0)+1;});
+    const cs=Object.entries(cc).map(([c,n])=>`<span style="color:var(--text);">${ctag(c)} ${n}</span>`).join(' ');
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td class="tela-name">${tela.charAt(0).toUpperCase()+tela.slice(1)}</td><td class="qty">${de.length}</td><td style="color:var(--muted);font-size:.73rem;">${cs||'<span style="color:var(--muted)">—</span>'}</td>`;
+    body.appendChild(tr);
+  });
+  const list=document.getElementById('rollosList');list.innerHTML='';
+  [...rollos].reverse().forEach(r=>{const d=document.createElement('div');d.className='rollo-item';d.innerHTML=`<span style="color:var(--accent);font-weight:500;">${r.tipoTela}</span><span>${r.metros}m</span> · <span>${r.color}</span> · <span>${r.fecha}</span>`;list.appendChild(d);});
+}
+function toggleVerTodos(){verTodosRollos=!verTodosRollos;document.getElementById('stockResumen').classList.toggle('hidden',verTodosRollos);document.getElementById('stockCompleto').classList.toggle('hidden',!verTodosRollos);document.getElementById('btnVerTodos').textContent=verTodosRollos?'Ver resumen':'Ver todos';}
+
+// ═══════════════════ PRODUCCIÓN ═══════════════════
+function actualizarInfoTela(){
+  const tela=document.getElementById('pTipoTela').value;
+  const badge=document.getElementById('telaInfoBadge');
+  if(!tela){badge.innerHTML='—';return;}
+  const de=rollos.filter(r=>r.tipoTela===tela);
+  const cc={};de.forEach(r=>{cc[r.color]=(cc[r.color]||0)+1;});
+  const cs=Object.entries(cc).map(([c,n])=>`<span>${ctag(c)} ${n}</span>`).join(' · ');
+  badge.innerHTML=`<span>${de.length} rollo${de.length!==1?'s':''}</span>${cs?` — ${cs}`:''}`;
+}
+function iniciarProduccion(){
+  if(!rollos.length){alert('No hay rollos en stock.');return;}
+  resetPasos();document.getElementById('prodPaso1').classList.remove('hidden');
+  document.getElementById('pTipoTela').value='';document.getElementById('pCantRollos').value='';document.getElementById('pProducto').value='';
+  document.getElementById('telaInfoBadge').innerHTML='—';errShow('errPaso1','');
+  bloquearNav();
+  setCancelBtn('btnAgregarProd','producción',cancelarFormProd);
+}
+function cancelarFormProd(){
+  pedirConfirmCancel('agregar producción',()=>{
+    resetPasos();
+    desbloquearNav();
+    setAddBtn('btnAgregarProd','producción',iniciarProduccion);
+  });
+}
+function resetPasos(){['prodPaso1','prodPaso2','prodPaso3','prodPaso4'].forEach(id=>document.getElementById(id).classList.add('hidden'));pE={tipoTela:'',cantRollos:0,producto:'',colores:[],talles:[],datosTabla:{},_grupos:{},_selConteo:{}};}
+function confirmarPaso1(){
+  const tela=document.getElementById('pTipoTela').value,cant=Number(document.getElementById('pCantRollos').value),prod=document.getElementById('pProducto').value;
+  const de=rollos.filter(r=>r.tipoTela===tela);
+  if(!tela||!prod||isNaN(cant)||cant<1||cant>de.length){errShow('errPaso1',`⚠ Completá todo. Hay ${de.length} rollo(s) de ${tela||'esa tela'}.`);return;}
+  errShow('errPaso1','');pE.tipoTela=tela;pE.cantRollos=cant;pE.producto=prod;
+  document.getElementById('prodPaso1').classList.add('hidden');document.getElementById('prodPaso2').classList.remove('hidden');construirSelectores();
+}
+function construirSelectores(){
+  const cont=document.getElementById('selectoresRollos');cont.innerHTML='';const g={};
+  rollos.filter(r=>r.tipoTela===pE.tipoTela).forEach(r=>{const k=`${r.color}|${r.metros}`;if(!g[k])g[k]={color:r.color,metros:r.metros,ids:[]};g[k].ids.push(r.id);});
+  pE._grupos=g;
+  for(let i=0;i<pE.cantRollos;i++){const w=document.createElement('div');w.className='rollo-selector-item';w.innerHTML=`<div class="select-wrapper"><select id="sr_${i}" onchange="recalcSel()"><option value="">— Rollo ${i+1} —</option>${Object.entries(g).map(([k,v])=>`<option value="${k}">${v.color} · ${v.metros}m (×${v.ids.length})</option>`).join('')}</select></div>`;cont.appendChild(w);}
+  errShow('errPaso2','');
+}
+function recalcSel(){
+  const n=pE.cantRollos;const ct={};for(let i=0;i<n;i++){const v=document.getElementById(`sr_${i}`)?.value;if(v)ct[v]=(ct[v]||0)+1;}
+  for(let i=0;i<n;i++){const sel=document.getElementById(`sr_${i}`);if(!sel)continue;const prop=sel.value;Array.from(sel.options).forEach(opt=>{if(!opt.value)return;const gv=pE._grupos[opt.value];const d=gv.ids.length-(ct[opt.value]||0)+(opt.value===prop?1:0);opt.disabled=d<=0;opt.textContent=`${gv.color} · ${gv.metros}m (×${d<=0?'agotado':d})`;});}
+}
+function confirmarPaso2(){
+  const n=pE.cantRollos;const ct={};for(let i=0;i<n;i++){const v=document.getElementById(`sr_${i}`)?.value;if(!v){errShow('errPaso2','⚠ Seleccioná todos los rollos.');return;}ct[v]=(ct[v]||0)+1;}
+  for(const[k,c] of Object.entries(ct)){if(c>pE._grupos[k].ids.length){errShow('errPaso2','⚠ Selección inválida.');return;}}
+  errShow('errPaso2','');pE._selConteo=ct;pE.colores=[...new Set(Object.keys(ct).map(k=>k.split('|')[0]))];
+  document.getElementById('prodPaso2').classList.add('hidden');document.getElementById('prodPaso3').classList.remove('hidden');document.getElementById('pCantTalles').value='';errShow('errPaso3','');
+}
+function confirmarPaso3(){
+  const n=Number(document.getElementById('pCantTalles').value);if(isNaN(n)||n<1){errShow('errPaso3','⚠ Ingresá una cantidad válida.');return;}
+  errShow('errPaso3','');const todos=Array.from({length:31},(_,i)=>i*2);pE.talles=todos.slice(todos.indexOf(40),todos.indexOf(40)+n);pE.datosTabla={};
+  document.getElementById('prodPaso3').classList.add('hidden');document.getElementById('prodPaso4').classList.remove('hidden');renderTabla();
+}
+function guardarDT(){pE.colores.forEach(c=>{const ck=c.replace(/ /g,'_');if(!pE.datosTabla[c])pE.datosTabla[c]={};pE.talles.forEach((_,ci)=>{const inp=document.getElementById(`cel_${ck}_${ci}`);if(inp)pE.datosTabla[c][ci]=inp.value;});});}
+function renderTabla(){
+  const head=document.getElementById('tablaHead'),body=document.getElementById('tablaBody');
+  const todos=Array.from({length:31},(_,i)=>i*2);head.innerHTML='';
+  const trH=document.createElement('tr');trH.innerHTML='<th>Color</th>';
+  pE.talles.forEach((t,ci)=>{const th=document.createElement('th');th.innerHTML=`<div class="select-wrapper" style="min-width:52px;"><select class="talle-sel" onchange="cambiarTalle(this,${ci})">${todos.map(n=>`<option value="${n}"${n===t?' selected':''}>${n}</option>`).join('')}</select></div>`;trH.appendChild(th);});
+  head.appendChild(trH);body.innerHTML='';
+  pE.colores.forEach(c=>{const ck=c.replace(/ /g,'_');const tr=document.createElement('tr');let cells=`<td class="td-color">${c}</td>`;pE.talles.forEach((_,ci)=>{const sv=pE.datosTabla[c]&&pE.datosTabla[c][ci]!=null?pE.datosTabla[c][ci]:'';cells+=`<td><input type="number" min="0" step="1" placeholder="0" id="cel_${ck}_${ci}" value="${sv}"></td>`;});tr.innerHTML=cells;body.appendChild(tr);});
+}
+function cambiarTalle(sel,ci){guardarDT();pE.talles[ci]=Number(sel.value);renderTabla();}
+function agregarColumna(){guardarDT();const todos=Array.from({length:31},(_,i)=>i*2);const s=todos.find(t=>t>pE.talles[pE.talles.length-1]&&!pE.talles.includes(t));if(s===undefined){alert('No hay más talles.');return;}pE.talles.push(s);renderTabla();}
+function quitarColumna(){if(pE.talles.length<=1){alert('Debe haber al menos un talle.');return;}guardarDT();pE.talles.pop();renderTabla();}
+function poneTallesConsecutivos(){guardarDT();const todos=Array.from({length:31},(_,i)=>i*2);const idx=todos.indexOf(pE.talles[0]);if(idx===-1)return;for(let i=1;i<pE.talles.length;i++){const nt=todos[idx+i];if(nt!==undefined)pE.talles[i]=nt;}renderTabla();}
+function poneRecortesIguales(){pE.colores.forEach(c=>{const ck=c.replace(/ /g,'_');const f=document.getElementById(`cel_${ck}_0`);if(!f||f.value==='')return;pE.talles.forEach((_,ci)=>{if(ci===0)return;const inp=document.getElementById(`cel_${ck}_${ci}`);if(inp)inp.value=f.value;});});}
+function confirmarProduccion(){
+  let ok=true;pE.colores.forEach(c=>{pE.talles.forEach((_,ci)=>{const inp=document.getElementById(`cel_${c.replace(/ /g,'_')}_${ci}`);if(!inp||inp.value===''||isNaN(Number(inp.value)))ok=false;});});
+  if(!ok){errShow('errTabla','⚠ Completá todos los campos de la tabla.');return;}
+  errShow('errTabla','');document.getElementById('mFechaProd').value=hoy();document.getElementById('modalFechaProd').classList.add('active');
+}
+function finalizarProduccion(){
+  const fecha=document.getElementById('mFechaProd').value.trim();if(!esFechaValida(fecha)){alert('Fecha inválida.');return;}
+  cerrarModal('modalFechaProd');
+  const cpt={};pE.colores.forEach(c=>{cpt[c]={};pE.talles.forEach((t,ci)=>{const inp=document.getElementById(`cel_${c.replace(/ /g,'_')}_${ci}`);cpt[c][t]=Number(inp.value)||0;});});
+  let totalPrendas=0;pE.colores.forEach(c=>pE.talles.forEach(t=>{totalPrendas+=cpt[c][t]||0;}));
+  let totalMetros=0;Object.entries(pE._selConteo).forEach(([k,n])=>{totalMetros+=Number(k.split('|')[1])*n;});
+  // metros por prenda = metros totales de los rollos usados / cantidad total de prendas
+  const metrosPorPrenda=totalPrendas>0?parseFloat((totalMetros/totalPrendas).toFixed(2)):0;
+  const porColor={};pE.colores.forEach(c=>{let s=0;pE.talles.forEach(t=>{s+=cpt[c][t]||0;});porColor[c]=s;});
+  const prod={id:genId(),fecha,hora:ahoraStr(),rollosUsados:pE.cantRollos,tipoTela:pE.tipoTela,producto:pE.producto,totalPrendas,cantPorColorTalle:cpt,colores:[...pE.colores],talles:[...pE.talles],totalMetros,metrosPorPrenda,porColor};
+  producciones.push(prod);
+  Object.entries(pE._selConteo).forEach(([k,n])=>{const[color,mStr]=k.split('|');let el=0;rollos=rollos.filter(r=>{if(el<n&&r.tipoTela===pE.tipoTela&&r.color===color&&r.metros===Number(mStr)){el++;return false;}return true;});});
+  renderRollos();renderProducciones();actualizarSelectorProd();resetPasos();
+  desbloquearNav();setAddBtn('btnAgregarProd','producción',iniciarProduccion);
+}
+function renderProducciones(){
+  document.getElementById('conteoProd').textContent=producciones.length;
+  const list=document.getElementById('prodList');list.innerHTML='';
+  const btn=document.getElementById('btnVerTodasProd');
+  if(producciones.length>5){btn.style.display='inline-flex';btn.textContent=verTodasProd?'Ver menos':`Ver todas (${producciones.length})`;}else btn.style.display='none';
+  const orden=[...producciones].reverse();
+  (verTodasProd?orden:orden.slice(0,5)).forEach(p=>{
+    const d=document.createElement('div');d.className='prod-item';
+    const pc=p.colores.map(c=>`${c.charAt(0).toUpperCase()+c.slice(1)} ${p.porColor[c]}`).join(' · ');
+    d.innerHTML=`<div class="prod-fecha">${p.fecha}${p.hora?' '+p.hora:''}</div>
+      <div class="prod-main">${p.producto} · ${p.tipoTela} · <b>${p.totalPrendas} prendas</b> · ${p.rollosUsados} rollos</div>
+      <div class="prod-detail">${p.metrosPorPrenda}m/prenda · ${p.totalMetros}m total · ${pc}
+        ${(p.talles&&p.talles.length)?`<button class="btn btn-xs" style="margin-left:6px;" onclick="abrirModalTalles('${p.id}','prod')">Ver talles</button>`:''}
+      </div>`;
+    list.appendChild(d);
+  });
+}
+function toggleVerTodasProd(){verTodasProd=!verTodasProd;renderProducciones();}
+
+// ═══════════════════ COSTURA ═══════════════════
+function actualizarSelectorProd(){
+  ['cProdSel','cProdSelT'].forEach(sid=>{
+    const sel=document.getElementById(sid);if(!sel)return;
+    const prev=sel.value;sel.innerHTML='<option value="">— sin producción —</option>';
+    producciones.forEach(p=>{const o=document.createElement('option');o.value=String(p.id);o.textContent=`${p.fecha} · ${p.producto} · ${p.tipoTela} · ${p.totalPrendas} prendas`;sel.appendChild(o);});
+    sel.value=prev;
+  });
+}
+function iniciarCostura(){
+  document.getElementById('costuraTipoSel').classList.remove('hidden');
+  document.getElementById('costuraFormFabrica').classList.add('hidden');
+  document.getElementById('costuraFormTercero').classList.add('hidden');
+  document.getElementById('tipoBtnFabrica').classList.remove('active');
+  document.getElementById('tipoBtnTercero').classList.remove('active');
+  aviosFormTemp=[];
+  bloquearNav();
+  setCancelBtn('btnAgregarCostura','costura',cancelarFormCostura);
+}
+function cancelarFormCostura(){
+  pedirConfirmCancel('agregar costura',()=>{
+    document.getElementById('costuraTipoSel').classList.add('hidden');
+    document.getElementById('costuraFormFabrica').classList.add('hidden');
+    document.getElementById('costuraFormTercero').classList.add('hidden');
+    aviosFormTemp=[];
+    desbloquearNav();
+    setAddBtn('btnAgregarCostura','costura',iniciarCostura);
+  });
+}
+function selTipoCostura(tipo){
+  document.getElementById('tipoBtnFabrica').classList.toggle('active',tipo==='fabrica');
+  document.getElementById('tipoBtnTercero').classList.toggle('active',tipo==='tercero');
+  document.getElementById('costuraFormFabrica').classList.toggle('hidden',tipo!=='fabrica');
+  document.getElementById('costuraFormTercero').classList.toggle('hidden',tipo!=='tercero');
+  actualizarSelectorProd();
+  aviosFormTemp=[];
+  if(tipo==='fabrica'){document.getElementById('cFechaFabrica').value=hoy();document.getElementById('cfExtra').classList.add('hidden');document.getElementById('cfAviosList').innerHTML='';errShow('errCostFabrica','');}
+  else{document.getElementById('cFechaTercero').value=hoy();document.getElementById('ctExtra').classList.add('hidden');document.getElementById('ctAviosList').innerHTML='';document.getElementById('cNombreTercero').value='';document.getElementById('cDescTercero').value='';errShow('errCostTercero','');}
+}
+function getProd(id){return producciones.find(p=>String(p.id)===String(id));}
+function onProdChange(lado){
+  const selId=lado==='f'?'cProdSel':'cProdSelT';
+  const extraId=lado==='f'?'cfExtra':'ctExtra';
+  const listId=lado==='f'?'cfAviosList':'ctAviosList';
+  const prodId=document.getElementById(selId).value;
+  aviosFormTemp=[];
+  document.getElementById(listId).innerHTML='';
+  if(!prodId){document.getElementById(extraId).classList.add('hidden');return;}
+  const prod=getProd(prodId);if(!prod){document.getElementById(extraId).classList.add('hidden');return;}
+  document.getElementById(extraId).classList.remove('hidden');
+}
+
+// ── Avíos a usar en la costura (lista temporal antes de confirmar) ──
+let aviosFormTemp=[];
+function stockAvioDisponible(tipo){
+  return avios.filter(a=>a.tipo===tipo).reduce((s,a)=>s+a.cantidad,0) - aviosFormTemp.filter(a=>a.tipo===tipo).reduce((s,a)=>s+a.cantidad,0);
+}
+function agregarAvioForm(lado){
+  const tipoId=lado==='f'?'cfAvTipo':'ctAvTipo';
+  const cantId=lado==='f'?'cfAvCant':'ctAvCant';
+  const errId=lado==='f'?'errCfAvio':'errCtAvio';
+  const listId=lado==='f'?'cfAviosList':'ctAviosList';
+  const tipo=document.getElementById(tipoId).value;
+  const cant=Number(document.getElementById(cantId).value);
+  if(!tipo||isNaN(cant)||cant<1){errShow(errId,'⚠ Elegí tipo y cantidad.');return;}
+  const disp=stockAvioDisponible(tipo);
+  if(cant>disp){errShow(errId,`⚠ Solo hay ${disp} ${tipo} disponibles.`);return;}
+  errShow(errId,'');
+  aviosFormTemp.push({tipo,cantidad:cant});
+  document.getElementById(tipoId).value='';document.getElementById(cantId).value='';
+  renderAviosFormList(lado);
+}
+function quitarAvioForm(lado,idx){aviosFormTemp.splice(idx,1);renderAviosFormList(lado);}
+function renderAviosFormList(lado){
+  const listId=lado==='f'?'cfAviosList':'ctAviosList';
+  const list=document.getElementById(listId);list.innerHTML='';
+  aviosFormTemp.forEach((a,idx)=>{
+    const row=document.createElement('div');
+    row.style.cssText='display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:7px 11px;font-size:.77rem;';
+    row.innerHTML=`<span><span style="color:var(--accent2);">${a.tipo}</span> · ${a.cantidad}</span><button class="btn btn-xs" onclick="quitarAvioForm('${lado}',${idx})" style="padding:2px 8px;">✕</button>`;
+    list.appendChild(row);
+  });
+}
+function confirmarCosturaFabrica(){
+  const fecha=document.getElementById('cFechaFabrica').value.trim();
+  const prodId=document.getElementById('cProdSel').value;
+  if(!esFechaValida(fecha)){errShow('errCostFabrica','⚠ Fecha inexistente.');return;}
+  if(!prodId){errShow('errCostFabrica','⚠ Seleccioná una producción.');return;}
+  const prod=getProd(prodId);if(!prod){errShow('errCostFabrica','⚠ No encontrada.');return;}
+  errShow('errCostFabrica','');
+  const aviosUsados=[...aviosFormTemp];
+  aviosUsados.forEach(a=>{avios.push({tipo:a.tipo,cantidad:-a.cantidad});});
+  costuras.push({id:genId(),fecha,lugar:'fabrica',produccionId:String(prod.id),produccionRef:null,producto:prod.producto,tipoTela:prod.tipoTela,totalPrendas:prod.totalPrendas,colores:[...prod.colores],talles:[...prod.talles],cantPorColorTalle:JSON.parse(JSON.stringify(prod.cantPorColorTalle)),porColor:{...prod.porColor},aviosUsados,estado:'pendiente',nombre:'',descripcion:'',fechaFin:''});
+  producciones=producciones.filter(p=>String(p.id)!==String(prod.id));
+  aviosFormTemp=[];
+  renderProducciones();actualizarSelectorProd();renderAvios();
+  ocultarFormsCostura();renderCosturas();
+}
+function confirmarCosturaTercero(){
+  const fecha=document.getElementById('cFechaTercero').value.trim();
+  const nombre=document.getElementById('cNombreTercero').value.trim();
+  const desc=document.getElementById('cDescTercero').value.trim();
+  const prodId=document.getElementById('cProdSelT').value;
+  if(!esFechaValida(fecha)){errShow('errCostTercero','⚠ Fecha inexistente.');return;}
+  if(!nombre||!desc){errShow('errCostTercero','⚠ Completá nombre y descripción.');return;}
+  errShow('errCostTercero','');
+  let pd={producto:'',tipoTela:'',totalPrendas:0,colores:[],talles:[],cantPorColorTalle:{},porColor:{}};
+  if(prodId){
+    const prod=getProd(prodId);
+    if(prod){
+      pd={producto:prod.producto,tipoTela:prod.tipoTela,totalPrendas:prod.totalPrendas,colores:[...prod.colores],talles:[...prod.talles],cantPorColorTalle:JSON.parse(JSON.stringify(prod.cantPorColorTalle)),porColor:{...prod.porColor}};
+      producciones=producciones.filter(p=>String(p.id)!==String(prodId));
+      renderProducciones();actualizarSelectorProd();
+    }
+  }
+  const aviosUsados=[...aviosFormTemp];
+  aviosUsados.forEach(a=>{avios.push({tipo:a.tipo,cantidad:-a.cantidad});});
+  aviosFormTemp=[];
+  costuras.push({id:genId(),fecha,lugar:'tercero',produccionId:prodId||'',produccionRef:null,...pd,aviosUsados,estado:'pendiente',nombre,descripcion:desc,fechaFin:''});
+  renderAvios();
+  ocultarFormsCostura();renderCosturas();
+}
+function ocultarFormsCostura(){
+  document.getElementById('costuraTipoSel').classList.add('hidden');
+  document.getElementById('costuraFormFabrica').classList.add('hidden');
+  document.getElementById('costuraFormTercero').classList.add('hidden');
+  desbloquearNav();setAddBtn('btnAgregarCostura','costura',iniciarCostura);
+}
+function renderCosturas(){
+  const pend=costuras.filter(c=>c.estado==='pendiente');
+  const fin=[...costuras.filter(c=>c.estado==='finalizada')].reverse();
+  document.getElementById('conteoCostPend').textContent=pend.length;
+  document.getElementById('conteoCostFin').textContent=fin.length;
+  const btn=document.getElementById('btnVerTodasCost');
+  if(fin.length>5){btn.style.display='inline-flex';btn.textContent=verTodasCost?'Ver menos':`Ver finalizadas (${fin.length})`;}else btn.style.display='none';
+  const pl=document.getElementById('costuraPendList');pl.innerHTML='';
+  if(pend.length){const lbl=document.createElement('div');lbl.className='list-section-label';lbl.textContent='Pendientes';pl.appendChild(lbl);pend.forEach(c=>pl.appendChild(buildCC(c,true)));}
+  const fl=document.getElementById('costuraFinList');fl.innerHTML='';
+  const show=verTodasCost?fin:fin.slice(0,5);
+  if(show.length){const lbl=document.createElement('div');lbl.className='list-section-label';lbl.textContent='Finalizadas';fl.appendChild(lbl);show.forEach(c=>fl.appendChild(buildCC(c,false)));}
+}
+function buildCC(c,conBtn){
+  const div=document.createElement('div');div.className=`costura-item ${c.estado}`;
+  const lugar=c.lugar==='fabrica'?'Fábrica':`Tercero – ${c.nombre}`;
+  const desc=c.lugar==='tercero'?` · ${c.descripcion}`:'';
+  const fecha=conBtn?`${c.fecha} · ${lugar}${desc}`:`Ingreso: ${c.fecha} → Entrega: ${c.fechaFin} · ${lugar}${desc}`;
+  const mainInfo=c.producto||c.tipoTela?`<div style="color:var(--text);font-size:.85rem;margin:3px 0;">${c.producto||''} · ${c.tipoTela||''} · <b>${c.totalPrendas||0} prendas</b></div>`:'';
+  const pc=c.colores&&c.colores.length?c.colores.map(col=>`${col.charAt(0).toUpperCase()+col.slice(1)} ${c.porColor[col]||0}`).join(' · '):'';
+  const hasTalles=c.colores&&c.colores.length&&c.talles&&c.talles.length;
+  const colorInfo=pc?`<div style="color:var(--muted);font-size:.71rem;margin-top:2px;">${pc}${hasTalles?`<button class="btn btn-xs" style="margin-left:6px;" onclick="abrirModalTalles('${c.id}','costura')">Ver talles</button>`:''}</div>`:'';
+  const avStr=c.aviosUsados&&c.aviosUsados.length?c.aviosUsados.map(a=>`${a.tipo} ${a.cantidad}`).join(' · '):'';
+  const avInfo=avStr?`<div style="color:var(--muted);font-size:.69rem;margin-top:2px;">Avíos: ${avStr}</div>`:'';
+  div.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px;flex-wrap:wrap;">
+    <div style="flex:1;"><div style="color:var(--accent2);font-weight:500;font-size:.72rem;">${fecha}</div>${mainInfo}${colorInfo}${avInfo}
+    <div style="margin-top:4px;"><span class="badge badge-${c.estado==='pendiente'?'pend':'fin'}">${c.estado}</span></div></div>
+    ${conBtn?`<button class="btn btn-orange btn-xs" onclick="abrirFinCostura('${c.id}')">Finalizar</button>`:''}
+  </div>`;
+  return div;
+}
+function toggleVerTodasCost(){verTodasCost=!verTodasCost;renderCosturas();}
+function abrirFinCostura(id){costFinalizandoId=id;document.getElementById('mFechaFinCost').value=hoy();document.getElementById('modalFinCost').classList.add('active');}
+function confirmarFinCost(){
+  const f=document.getElementById('mFechaFinCost').value.trim();if(!esFechaValida(f)){alert('Fecha inválida.');return;}
+  cerrarModal('modalFinCost');const c=costuras.find(x=>x.id===costFinalizandoId);if(c){c.estado='finalizada';c.fechaFin=f;}costFinalizandoId=null;renderCosturas();renderStockFinal();
+}
+
+// ═══════════════════ MODAL TALLES ═══════════════════
+function abrirModalTalles(id,tipo){
+  let item=null;
+  if(tipo==='prod')item=producciones.find(p=>String(p.id)===String(id));
+  else if(tipo==='costura')item=costuras.find(c=>String(c.id)===String(id));
+  if(!item||!item.colores||!item.colores.length||!item.talles||!item.talles.length){alert('Sin datos de talles.');return;}
+  buildModalTalles(item,tipo==='prod'?`${item.producto} · ${item.tipoTela} · ${item.fecha}`:`${item.producto||'Costura'} · ${item.fecha}`);
+}
+function abrirModalTallesStock(key){
+  const mapa=calcStock();const d=mapa[key];
+  if(!d||!d.colores.length){alert('Sin datos.');return;}
+  // construir objeto compatible
+  const fake={colores:d.colores,talles:[...d.talles].sort((a,b)=>a-b),cantPorColorTalle:d.cpt,porColor:d.porColor};
+  buildModalTalles(fake,key);
+}
+function buildModalTalles(item,titulo){
+  document.getElementById('modalTallesTitulo').textContent=titulo;
+  const tallesArr=(item.talles instanceof Set?[...item.talles]:[...item.talles]).sort((a,b)=>a-b);
+  let html=`<table class="talles-modal-table"><thead><tr><th>Color</th>${tallesArr.map(t=>`<th>T${t}</th>`).join('')}<th>Total</th></tr></thead><tbody>`;
+  item.colores.forEach(col=>{
+    const fila=tallesArr.map(t=>`<td class="tmt-talle">${(item.cantPorColorTalle[col]||{})[t]||0}</td>`).join('');
+    const tot=tallesArr.reduce((s,t)=>s+((item.cantPorColorTalle[col]||{})[t]||0),0);
+    html+=`<tr><td class="tmt-color">${col}</td>${fila}<td style="color:var(--accent);font-weight:700;">${tot}</td></tr>`;
+  });
+  const totCol=tallesArr.map(t=>item.colores.reduce((s,c)=>s+((item.cantPorColorTalle[c]||{})[t]||0),0));
+  const gran=totCol.reduce((s,n)=>s+n,0);
+  html+=`<tr style="border-top:2px solid var(--border);background:var(--surface2);"><td style="color:var(--muted);font-size:.66rem;text-transform:uppercase;letter-spacing:1px;">Total</td>${totCol.map(n=>`<td style="color:var(--accent2);font-weight:700;">${n}</td>`).join('')}<td style="color:var(--accent);font-weight:800;font-size:1.05rem;">${gran}</td></tr>`;
+  html+='</tbody></table>';
+  document.getElementById('modalTallesBody').innerHTML=html;
+  document.getElementById('modalTalles').classList.add('active');
+}
+
+// ═══════════════════ STOCK FINAL ═══════════════════
+let formAvioVisible=false;
+function normProd(p,t){
+  const pp=(p||'').toLowerCase().trim(),tt=(t||'').toLowerCase().trim();
+  if(pp==='bombacha')return`bombacha ${tt}`;
+  if(pp==='pantalon trabajo'||pp==='pantalón trabajo')return'pantalon trabajo';
+  if(pp==='pantalon cargo'||pp==='pantalón cargo')return'pantalon cargo';
+  return pp==='camisas'?'camisas':`${pp} ${tt}`.trim();
+}
+function sfColor(n){return n<=20?'sf-row-rojo':n<=50?'sf-row-amarillo':'sf-row-verde';}
+function calcStock(){
+  const m={};PROD_FIJOS.forEach(k=>{m[k]={total:0,porColor:{},cpt:{},talles:new Set(),colores:[]};});
+  costuras.filter(c=>c.estado==='finalizada').forEach(c=>{
+    const k=normProd(c.producto,c.tipoTela);if(!m[k])m[k]={total:0,porColor:{},cpt:{},talles:new Set(),colores:[]};
+    const e=m[k];e.total+=c.totalPrendas||0;
+    (c.colores||[]).forEach(col=>{
+      if(!e.porColor[col])e.porColor[col]=0;e.porColor[col]+=(c.porColor[col]||0);
+      if(!e.cpt[col])e.cpt[col]={};
+      (c.talles||[]).forEach(t=>{e.talles.add(t);if(!e.cpt[col][t])e.cpt[col][t]=0;e.cpt[col][t]+=((c.cantPorColorTalle[col]||{})[t]||0);});
+      if(!e.colores.includes(col))e.colores.push(col);
+    });
+  });
+  return m;
+}
+function renderStockFinal(){
+  const mapa=calcStock();const tbody=document.getElementById('sfBodyPrendas');tbody.innerHTML='';
+  const extras=Object.keys(mapa).filter(k=>!PROD_FIJOS.includes(k));
+  [...PROD_FIJOS,...extras].forEach(key=>{
+    const d=mapa[key]||{total:0,porColor:{},cpt:{},talles:new Set(),colores:[]};
+    const pc=d.colores.length?d.colores.map(c=>`${c.charAt(0).toUpperCase()+c.slice(1)} ${d.porColor[c]||0}`).join(' · '):'—';
+    const hasTalles=d.colores.length&&d.talles.size;
+    const tr=document.createElement('tr');tr.className=sfColor(d.total);
+    tr.innerHTML=`<td class="sf-nombre">${key}</td><td class="sf-total">${d.total}</td>
+      <td class="sf-detail">${pc}${hasTalles?`<button class="btn btn-xs" style="margin-left:7px;" onclick="abrirModalTallesStock('${key}')">Ver talles</button>`:''}</td>`;
+    tbody.appendChild(tr);
+  });
+  renderAvios();
+}
+function renderAvios(){
+  const tbody=document.getElementById('sfBodyAvios');tbody.innerHTML='';
+  const acum={};avios.forEach(a=>{acum[a.tipo]=(acum[a.tipo]||0)+a.cantidad;});
+  ['hilos','botones'].forEach(t=>{if(acum[t]===undefined)acum[t]=0;});
+  Object.entries(acum).forEach(([tipo,cant])=>{const tr=document.createElement('tr');tr.className=sfColor(cant);tr.innerHTML=`<td class="sf-nombre">${tipo}</td><td class="sf-total">${cant}</td>`;tbody.appendChild(tr);});
+}
+function toggleFormAvio(){formAvioVisible=!formAvioVisible;document.getElementById('formAvio').classList.toggle('hidden',!formAvioVisible);if(formAvioVisible){document.getElementById('avTipo').value='';document.getElementById('avCantidad').value='';errShow('errAvio','');}}
+function confirmarAvio(){
+  const tipo=document.getElementById('avTipo').value,cant=Number(document.getElementById('avCantidad').value);
+  if(!tipo||isNaN(cant)||cant<1){errShow('errAvio','⚠ Completá tipo y cantidad.');return;}
+  errShow('errAvio','');avios.push({tipo,cantidad:cant});toggleFormAvio();renderAvios();
+}
+
+// Init
+renderRollos();renderStockFinal();
+</script>
+</body>
+</html>
