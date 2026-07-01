@@ -324,9 +324,10 @@ table.recorte-table td input[type=number]:focus{outline:none;border-color:var(--
         <table class="recorte-table"><thead id="tablaHead"></thead><tbody id="tablaBody"></tbody></table>
       </div>
       <div style="margin-top:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-        <button class="btn-add-col" onclick="agregarColumna()" title="Agregar talle">+</button>
+        <button class="btn-table-tool" onclick="agregarColumna()">+ Agregar columna</button>
+        <button class="btn-table-tool" onclick="quitarColumna()">− Quitar columna</button>
         <button class="btn-table-tool" onclick="poneTallesConsecutivos()">Talles consecutivos</button>
-        <button class="btn-table-tool" onclick="poneRecortesIguales()">Poner cantidad</button>
+        <button class="btn-table-tool" onclick="poneRecortesIguales()">Recortes consecutivos</button>
       </div>
       <div style="margin-top:12px;">
         <button class="btn btn-accent" onclick="confirmarProduccion()">✓ Confirmar producción</button>
@@ -838,6 +839,7 @@ function renderTabla(){
 }
 function cambiarTalle(sel,ci){guardarDT();pE.talles[ci]=Number(sel.value);renderTabla();}
 function agregarColumna(){guardarDT();const todos=Array.from({length:31},(_,i)=>i*2);const s=todos.find(t=>t>pE.talles[pE.talles.length-1]&&!pE.talles.includes(t));if(s===undefined){alert('No hay más talles.');return;}pE.talles.push(s);renderTabla();}
+function quitarColumna(){if(pE.talles.length<=1){alert('Debe haber al menos un talle.');return;}guardarDT();pE.talles.pop();renderTabla();}
 function poneTallesConsecutivos(){guardarDT();const todos=Array.from({length:31},(_,i)=>i*2);const idx=todos.indexOf(pE.talles[0]);if(idx===-1)return;for(let i=1;i<pE.talles.length;i++){const nt=todos[idx+i];if(nt!==undefined)pE.talles[i]=nt;}renderTabla();}
 function poneRecortesIguales(){pE.colores.forEach(c=>{const ck=c.replace(/ /g,'_');const f=document.getElementById(`cel_${ck}_0`);if(!f||f.value==='')return;pE.talles.forEach((_,ci)=>{if(ci===0)return;const inp=document.getElementById(`cel_${ck}_${ci}`);if(inp)inp.value=f.value;});});}
 function confirmarProduccion(){
